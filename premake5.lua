@@ -13,10 +13,30 @@ solution "opencv-rgbd"
 
     configuration "vs*"
         defines { "_CRT_SECURE_NO_WARNINGS" }
+        if not os.isfile("bin/opencv_world300d.dll") then
+            os.copyfile("../opencv-lib/vs2013-x86/opencv_world300d.dll", "bin/opencv_world300d.dll")
+        end
+        if not os.isfile("bin/opencv_world300.dll") then
+            os.copyfile("../opencv-lib/vs2013-x86/opencv_world300.dll", "bin/opencv_world300.dll")
+        end
 
     flags {
         "MultiProcessorCompile"
     }
+
+    libdirs {
+        "../opencv-lib/vs2013-x86",
+        "bin",
+    }
+    configuration "Debug"
+        links {
+            "opencv_world300d.lib"
+        }
+
+    configuration "Release"
+        links {
+            "opencv_world300.lib"
+        }
 
     configuration "Debug"
         targetdir ("bin")
@@ -33,7 +53,8 @@ solution "opencv-rgbd"
         includedirs {
             "include",
             "src",
-            "../opencv-lib/include/",
+            "../opencv-lib/include",
+            "../opencv-lib/include/opencv2",
         }
 
         files {
@@ -41,37 +62,41 @@ solution "opencv-rgbd"
             "src/*",
         }
 
-        libdirs {
-            "../opencv-lib/vs2013-x86"
-        }
-
         defines {
-            "HAVE_PROTOBUF=1"
-        }
 
-        configuration "Debug"
-            links {
-                "opencv_world300d.lib"
-            }
-        configuration "Release"
-            links {
-                "opencv_world300.lib"
-            }
+        }
 
     project "linemod"
         includedirs {
             "include",
-            "../opencv-lib/include/",
+            "../opencv-lib/include",
         }
         files {
-            "linemod.cpp"
+            "samples/linemod.cpp"
         }
+        configuration "Debug"
+            links {
+                "opencv-rgbd-d.lib"
+            }
+        configuration "Release"
+            links {
+                "opencv-rgbd.lib"
+            }
+
     project "odometry_evaluation"
         includedirs {
             "include",
-            "../opencv-lib/include/",
+            "../opencv-lib/include",
         }
         files {
-            "linemod.cpp"
+            "samples/linemod.cpp"
         }
+        configuration "Debug"
+            links {
+                "opencv-rgbd-d.lib"
+            }
+        configuration "Release"
+            links {
+                "opencv-rgbd.lib"
+            }
 
