@@ -208,8 +208,8 @@ int main(int argc, char * argv[])
     {
         // Capture next color/depth pair
         capture->grabFrame();
-        capture->retrieveFrame(cv::CAP_OPENNI_DEPTH_MAP);
-        capture->retrieveFrame(cv::CAP_OPENNI_BGR_IMAGE);
+        depth = capture->retrieveFrame(cv::CAP_OPENNI_DEPTH_MAP);
+        color = capture->retrieveFrame(cv::CAP_OPENNI_BGR_IMAGE);
 
         std::vector<cv::Mat> sources;
         sources.push_back(color);

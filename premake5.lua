@@ -81,51 +81,36 @@ solution "opencv-rgbd"
 
         }
 
-    project "linemod"
-        includedirs {
-            "include",
-            "src",
-            "../opencv-lib/include",
-            path.join(openni_path, "include"),
-        }
-        libdirs {
-            path.join(openni_path, "lib"),
-        }
-        
-        files {
-            "samples/linemod.cpp"
-        }
+    function create_app_project( app_path )
+        leaf_name = string.sub(app_path, string.len("apps/") + 1);
 
-        links "OpenNI2.lib"
-        configuration "Debug"
-            links {
-                "opencv-rgbd-d.lib"
+        project (leaf_name)
+
+            includedirs {
+                "include",
+                "../opencv-lib/include",
+                path.join(openni_path, "include"),
             }
-        configuration "Release"
-            links {
-                "opencv-rgbd.lib"
+            libdirs {
+                path.join(openni_path, "lib"),
             }
 
-    project "odometry_evaluation"
-        includedirs {
-            "include",
-            "src",
-            "../opencv-lib/include",
-            path.join(openni_path, "include"),
-        }
-        libdirs {
-            path.join(openni_path, "lib"),
-        }
-        files {
-            "samples/odometry_evaluation.cpp"
-        }
-        links "OpenNI2.lib"
-        configuration "Debug"
-            links {
-                "opencv-rgbd-d.lib"
-            }
-        configuration "Release"
-            links {
-                "opencv-rgbd.lib"
+            files {
+                "apps/" .. leaf_name .. "/*",
             }
 
+            links "OpenNI2.lib"
+            configuration "Debug"
+                links {
+                    "opencv-rgbd-d.lib"
+                }
+            configuration "Release"
+                links {
+                    "opencv-rgbd.lib"
+                }
+    end
+
+    local apps = os.matchdirs("apps/*")
+    for _, app in ipairs(apps) do
+        create_app_project(app)
+    end
