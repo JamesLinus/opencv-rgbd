@@ -10,13 +10,10 @@ solution "opencv-rgbd"
     language "C++"
     kind "ConsoleApp"
 
-    openni_path = nil
-
     configuration "vs*"
         defines { "_CRT_SECURE_NO_WARNINGS" }
 
         configuration "x86"
-            openni_path = "C:/Program Files (x86)/OpenNI2"
             libdirs {
                 "../opencv-lib/vs2013-x86",
                 "x86",
@@ -24,7 +21,6 @@ solution "opencv-rgbd"
             targetdir ("x86")
 
         configuration "x64"
-            openni_path = "C:/Program Files/OpenNI2"
             libdirs {
                 "../opencv-lib/vs2013-x64",
                 "x64",
@@ -69,7 +65,6 @@ solution "opencv-rgbd"
             "include",
             "src",
             "../opencv-lib/include",
-            path.join(openni_path, "include"),
         }
 
         files {
@@ -89,17 +84,17 @@ solution "opencv-rgbd"
             includedirs {
                 "include",
                 "../opencv-lib/include",
-                path.join(openni_path, "include"),
-            }
-            libdirs {
-                path.join(openni_path, "lib"),
             }
 
             files {
                 "apps/" .. leaf_name .. "/*",
             }
 
-            links "OpenNI2.lib"
+            links {
+                "opengl32.lib",
+                "glu32.lib"
+            }
+
             configuration "Debug"
                 links {
                     "opencv-rgbd-d.lib"

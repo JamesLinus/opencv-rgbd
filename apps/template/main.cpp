@@ -4,7 +4,6 @@
 #include <opencv2/rgbd.hpp>
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
-#include <opencv2/cap_openni2.hpp>
 
 int main(int argc, char * argv[])
 {
@@ -12,23 +11,23 @@ int main(int argc, char * argv[])
     cv::namedWindow("color");
 
     // Open Kinect sensor
-    cv::Ptr<CvCapture_OpenNI2> capture = new CvCapture_OpenNI2(0);
-    if (!capture->isOpened())
+    cv::VideoCapture capture(cv::CAP_OPENNI2);
+    if (!capture.isOpened())
     {
         printf("Could not open OpenNI-capable sensor\n");
         return -1;
     }
-    capture->setProperty(cv::CAP_PROP_OPENNI_REGISTRATION, 1);
-    double focal_length = capture->getProperty(cv::CAP_OPENNI_DEPTH_GENERATOR_FOCAL_LENGTH);
+    capture.set(cv::CAP_PROP_OPENNI_REGISTRATION, 1);
+    double focal_length = capture.get(cv::CAP_OPENNI_DEPTH_GENERATOR_FOCAL_LENGTH);
     //printf("Focal length = %f\n", focal_length);
 
     cv::Mat color, depth;
     bool isLooping = true;
     while (isLooping)
     {
-        capture->grabFrame();
-        depth = capture->retrieveFrame(cv::CAP_OPENNI_DEPTH_MAP);
-        color = capture->retrieveFrame(cv::CAP_OPENNI_BGR_IMAGE);
+        capture.grab();
+        capture.retrieve(depth, cv::CAP_OPENNI_DEPTH_MAP);
+        capture.retrieve(color, cv::CAP_OPENNI_BGR_IMAGE);
 
         cv::imshow("depth", depth);
         cv::imshow("color", color);

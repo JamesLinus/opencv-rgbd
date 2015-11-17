@@ -4,30 +4,71 @@
 #include <opencv2/rgbd.hpp>
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
-#include <opencv2/cap_openni2.hpp>
+#include <opencv2/core/opengl.hpp>
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN 1
+#define NOMINMAX 1
+#include <windows.h>
+#endif
+
+#if defined(__APPLE__)
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#else
+#include <GL/gl.h>
+#include <GL/glu.h>
+#endif
 
 using namespace cv;
+
+struct RenderContext
+{
+    Point2i size;
+    ogl::Arrays points;
+    Mat plane_mask;
+    std::vector<Vec4f> plane_coefficients;
+};
+
+void onRender(void* usr)
+{
+    RenderContext* context = (RenderContext*)usr;
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(60, (double)context->size.x / context->size.y, 0.1, 100.0);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(0, 0, 0, 0, 0, 1, 0, 1, 0);
+    //glScaled(2, 2, 2);
+    glRotated(-180, 0, 0, 1);
+
+    ogl::render(context->points);
+}
 
 int main(int argc, char * argv[])
 {
     namedWindow("depth");
+    namedWindow("cleanedDepth");
     namedWindow("color");
     namedWindow("normals");
+    namedWindow("points", WINDOW_OPENGL);
 
     // Open Kinect sensor
-    Ptr<CvCapture_OpenNI2> capture = new CvCapture_OpenNI2(0);
-    if (!capture->isOpened())
+    cv::VideoCapture capture(cv::CAP_OPENNI2);
+    if (!capture.isOpened())
     {
         printf("Could not open OpenNI-capable sensor\n");
         return -1;
     }
-    capture->setProperty(CAP_PROP_OPENNI_REGISTRATION, 1);
-    double focal_length = capture->getProperty(CAP_OPENNI_DEPTH_GENERATOR_FOCAL_LENGTH);
+    capture.set(cv::CAP_PROP_OPENNI_REGISTRATION, 1);
+    double focal_length = capture.get(cv::CAP_OPENNI_DEPTH_GENERATOR_FOCAL_LENGTH);
     printf("Focal length = %f\n", focal_length);
 
-    const int W = capture->getProperty(CAP_PROP_FRAME_WIDTH);
-    const int H = capture->getProperty(CAP_PROP_FRAME_HEIGHT);
-    int window_size = 5;
+    const int W = capture.get(CAP_PROP_FRAME_WIDTH);
+    const int H = capture.get(CAP_PROP_FRAME_HEIGHT);
+    int kWindowSize = 5;
     float cx = W / 2.f + 0.5f;
     float cy = H / 2.f + 0.5f;
 
@@ -35,26 +76,63 @@ int main(int argc, char * argv[])
     Mat Kinv = K.inv();
 
     Mat color, depth, normals;
+    Mat cleanedDepth;
+
+    resizeWindow("points", W, H);
+
+    RenderContext renderContext;
+    renderContext.size = { W, H };
+    setOpenGlDrawCallback("points", onRender, (void*)&renderContext);
 
     rgbd::RgbdPlane planeComputer;
-    rgbd::RgbdNormals normalsComputer(H, W, CV_32F, K, window_size, rgbd::RgbdNormals::RGBD_NORMALS_METHOD_FALS);
+    rgbd::RgbdNormals normalsComputer(H, W, CV_32F, K, kWindowSize, rgbd::RgbdNormals::RGBD_NORMALS_METHOD_FALS);
+    rgbd::DepthCleaner depthCleaner(CV_16UC1, kWindowSize);
 
-    Mat plane_mask;
-    std::vector<Vec4f> plane_coefficients;
+    Vec3b kRandomColors[256];
+    for (auto& clr : kRandomColors)
+    {
+        clr[0] = rand() % 256;
+        clr[1] = rand() % 256;
+        clr[2] = rand() % 256;
+    }
+    kRandomColors[255] = Vec3b(0, 0, 0);
 
     bool isLooping = true;
     while (isLooping)
     {
-        capture->grabFrame();
-        depth = capture->retrieveFrame(CAP_OPENNI_DEPTH_MAP);
-        color = capture->retrieveFrame(CAP_OPENNI_BGR_IMAGE);
+        capture.grab();
+        capture.retrieve(depth, cv::CAP_OPENNI_DEPTH_MAP);
+        capture.retrieve(color, cv::CAP_OPENNI_BGR_IMAGE);
 
-        Mat points3d;
-        rgbd::depthTo3d(depth, K, points3d);
-        normalsComputer(points3d, normals);
-        planeComputer(points3d, normals, plane_mask, plane_coefficients);
+        Mat points;
+#if 1
+        depthCleaner(depth, cleanedDepth);
+#else
+        cleanedDepth = depth;
+#endif
+        rgbd::depthTo3d(cleanedDepth, K, points);
+
+        normalsComputer(points, normals);
+        planeComputer(points, normals, renderContext.plane_mask, renderContext.plane_coefficients);
+
+        Mat plane_mask_rgb;
+        cvtColor(renderContext.plane_mask, plane_mask_rgb, COLOR_GRAY2RGB);
+        for (int y = 0; y < plane_mask_rgb.rows; y++)
+            for (int x = 0; x < plane_mask_rgb.cols; x++)
+            {
+                uchar label = renderContext.plane_mask.at<uchar>(y, x);
+                auto& pixel = plane_mask_rgb.at<Vec3b>(y, x);
+                pixel = kRandomColors[label];
+            }
+
+        renderContext.points.setVertexArray(points);
+        //renderContext.points.setNormalArray(normals);
+        renderContext.points.setColorArray(plane_mask_rgb);
+
+        updateWindow("points");
 
         imshow("depth", depth);
+        imshow("cleanedDepth", depth);
         imshow("color", color);
         imshow("normals", normals);
 

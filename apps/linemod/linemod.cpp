@@ -9,7 +9,6 @@
 #include <set>
 #include <cstdio>
 #include <iostream>
-#include <opencv2/cap_openni2.hpp>
 
 // Function prototypes
 void subtractPlane(const cv::Mat& depth, cv::Mat& mask, std::vector<CvPoint>& chain, double f);
@@ -192,14 +191,14 @@ int main(int argc, char * argv[])
     int num_modalities = (int)detector->getModalities().size();
 
     // Open Kinect sensor
-    cv::Ptr<CvCapture_OpenNI2> capture = new CvCapture_OpenNI2(0);
-    if (!capture->isOpened())
+    cv::VideoCapture capture(cv::CAP_OPENNI2);
+    if (!capture.isOpened())
     {
         printf("Could not open OpenNI-capable sensor\n");
         return -1;
     }
-    capture->setProperty(cv::CAP_PROP_OPENNI_REGISTRATION, 1);
-    double focal_length = capture->getProperty(cv::CAP_OPENNI_DEPTH_GENERATOR_FOCAL_LENGTH);
+    capture.set(cv::CAP_PROP_OPENNI_REGISTRATION, 1);
+    double focal_length = capture.get(cv::CAP_OPENNI_DEPTH_GENERATOR_FOCAL_LENGTH);
     //printf("Focal length = %f\n", focal_length);
 
     // Main loop
@@ -207,9 +206,9 @@ int main(int argc, char * argv[])
     for (;;)
     {
         // Capture next color/depth pair
-        capture->grabFrame();
-        depth = capture->retrieveFrame(cv::CAP_OPENNI_DEPTH_MAP);
-        color = capture->retrieveFrame(cv::CAP_OPENNI_BGR_IMAGE);
+        capture.grab();
+        capture.retrieve(depth, cv::CAP_OPENNI_DEPTH_MAP);
+        capture.retrieve(color, cv::CAP_OPENNI_BGR_IMAGE);
 
         std::vector<cv::Mat> sources;
         sources.push_back(color);
@@ -359,12 +358,12 @@ int main(int argc, char * argv[])
             break;
         case '[':
             // decrement threshold
-            matching_threshold = max(matching_threshold - 1, -100);
+            matching_threshold = std::max(matching_threshold - 1, -100);
             printf("New threshold: %d\n", matching_threshold);
             break;
         case ']':
             // increment threshold
-            matching_threshold = min(matching_threshold + 1, +100);
+            matching_threshold = std::min(matching_threshold + 1, +100);
             printf("New threshold: %d\n", matching_threshold);
             break;
         case 'w':
@@ -492,10 +491,10 @@ static void filterPlane(IplImage * ap_depth, std::vector<IplImage *> & a_masks, 
 
     for (int l_i = 0; l_i < (int)a_chain.size(); ++l_i)
     {
-        l_minx = min(l_minx, a_chain[l_i].x);
-        l_miny = min(l_miny, a_chain[l_i].y);
-        l_maxx = max(l_maxx, a_chain[l_i].x);
-        l_maxy = max(l_maxy, a_chain[l_i].y);
+        l_minx = std::min(l_minx, a_chain[l_i].x);
+        l_miny = std::min(l_miny, a_chain[l_i].y);
+        l_maxx = std::max(l_maxx, a_chain[l_i].x);
+        l_maxy = std::max(l_maxy, a_chain[l_i].y);
     }
     int l_w = l_maxx - l_minx + 1;
     int l_h = l_maxy - l_miny + 1;
@@ -540,7 +539,7 @@ static void filterPlane(IplImage * ap_depth, std::vector<IplImage *> & a_masks, 
 
             if (CV_IMAGE_ELEM(lp_mask, unsigned char, l_r + l_miny, l_c + l_minx) != 0)
             {
-                if (fabs(l_dist) < max(l_thres, (l_max_dist * 2.0f)))
+                if (fabs(l_dist) < std::max(l_thres, (l_max_dist * 2.0f)))
                 {
                     for (int l_p = 0; l_p < (int)a_masks.size(); ++l_p)
                     {
