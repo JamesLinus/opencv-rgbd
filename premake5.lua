@@ -16,6 +16,7 @@ solution "opencv-rgbd"
         configuration "x86"
             libdirs {
                 "../opencv-lib/vs2013-x86",
+                "../opencv-gfx/x86",
                 "x86",
             }
             targetdir ("x86")
@@ -23,6 +24,7 @@ solution "opencv-rgbd"
         configuration "x64"
             libdirs {
                 "../opencv-lib/vs2013-x64",
+                "../opencv-gfx/x64",
                 "x64",
             }
             targetdir ("x64")
@@ -84,6 +86,7 @@ solution "opencv-rgbd"
             includedirs {
                 "include",
                 "../opencv-lib/include",
+                "../opencv-gfx/include",
             }
 
             files {
@@ -92,16 +95,18 @@ solution "opencv-rgbd"
 
             links {
                 "opengl32.lib",
-                "glu32.lib"
+                "glu32.lib",
             }
 
             configuration "Debug"
                 links {
-                    "opencv-rgbd-d.lib"
+                    "opencv-rgbd-d.lib",
+                    "opencv-gfx-d.lib",
                 }
             configuration "Release"
                 links {
-                    "opencv-rgbd.lib"
+                    "opencv-rgbd.lib",
+                    "opencv-gfx.lib",
                 }
     end
 

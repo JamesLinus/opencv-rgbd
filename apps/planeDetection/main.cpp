@@ -82,7 +82,22 @@ int main(int argc, char * argv[])
 
     RenderContext renderContext;
     renderContext.size = { W, H };
-    setOpenGlDrawCallback("points", onRender, (void*)&renderContext);
+    setOpenGlDrawCallback("points", [](void* usr)
+    {
+        RenderContext* context = (RenderContext*)usr;
+
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        gluPerspective(60, (double)context->size.x / context->size.y, 0.1, 100.0);
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        gluLookAt(0, 0, 0, 0, 0, 1, 0, 1, 0);
+        //glScaled(2, 2, 2);
+        glRotated(-180, 0, 0, 1);
+
+        ogl::render(context->points);
+    }, (void*)&renderContext);
 
     rgbd::RgbdPlane planeComputer;
     rgbd::RgbdNormals normalsComputer(H, W, CV_32F, K, kWindowSize, rgbd::RgbdNormals::RGBD_NORMALS_METHOD_FALS);
