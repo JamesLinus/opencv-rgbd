@@ -27,12 +27,6 @@
 
 //#include "../stopwatch.h"
 
-#ifdef _MSC_VER
-#define ALIGN __declspec(align(16))
-#else
-#define ALIGN __attribute__((__aligned__(16)))
-#endif
-
 namespace dvo
 {
 namespace core
@@ -40,7 +34,7 @@ namespace core
 
 static inline void dump(const char* prefix, __m128 v)
 {
-  ALIGN float data[4];
+  EIGEN_ALIGN16 float data[4];
 
   _mm_store_ps(data, v);
 
@@ -53,7 +47,7 @@ static const __m128 NANS = _mm_set1_ps(std::numeric_limits<float>::quiet_NaN());
 
 static inline __m128 interpolateBilinearWithDepthBufferSse(const cv::Mat& intensity, const cv::Mat& depth, const __m128& xyxy_proj, const __m128& zzzz, const __m128& img_upper_bound)
 {
-  ALIGN int address[4];
+  EIGEN_ALIGN16 int address[4];
 
   // TODO: this calculation can be done for both points at the same time!
   __m128i x0y0i = _mm_cvtps_epi32(xyxy_proj);
