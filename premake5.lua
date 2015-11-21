@@ -86,11 +86,13 @@ solution "opencv-rgbd"
             includedirs {
                 "include",
                 "../opencv-lib/include",
+                "../eigen", -- for dvo-slam 
                 "../opencv-gfx/include",
+                "apps/" .. leaf_name .. "/include",
             }
 
             files {
-                "apps/" .. leaf_name .. "/*",
+                "apps/" .. leaf_name .. "/**",
             }
 
             links {
