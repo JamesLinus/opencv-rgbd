@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 
     Ptr<OdometryFrame> frame_prev = Ptr<OdometryFrame>(new OdometryFrame()),
         frame_curr = Ptr<OdometryFrame>(new OdometryFrame());
-    Ptr<Odometry> odometry = Odometry::create("RgbdOdometry"); // ICPOdometry, RgbdICPOdometry
+    Ptr<Odometry> odometry = Odometry::create("RgbdOdometry"); // ICPOdometry, RgbdOdometry, RgbdICPOdometry
     if (odometry.empty())
     {
         cout << "Can not create Odometry algorithm. Check the passed odometry name." << endl;
@@ -155,9 +155,8 @@ int main(int argc, char** argv)
 
             // scale depth
             Mat depth_flt;
-            depth.convertTo(depth_flt, CV_32FC1, 1.f / 5000.f);
+            rgbd::rescaleDepth(depth, CV_32FC1, depth_flt);
 #if !BILATERAL_FILTER
-            depth_flt.setTo(std::numeric_limits<float>::quiet_NaN(), depth == 0);
             depth = depth_flt;
 #else
             tm_bilateral_filter.start();
@@ -208,9 +207,7 @@ int main(int argc, char** argv)
 
             updateWindow("kinfu_lite");
 
-            char key = (char)waitKey(10);
-            if (key == 'q')
-                break;
+            char key = (char)waitKey(1);
 
             switch (key)
             {

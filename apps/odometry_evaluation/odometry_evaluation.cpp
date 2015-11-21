@@ -39,6 +39,7 @@
 #include <opencv2/calib3d.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/core/utility.hpp>
+#include "tinydir.h"
 
 #include <iostream>
 #include <fstream>
@@ -133,23 +134,29 @@ void setCameraMatrixFreiburg2(float& fx, float& fy, float& cx, float& cy)
  */
 int main(int argc, char** argv)
 {
-    if(argc != 4)
+    if (argc != 4)
     {
-        cout << "Format: file_with_rgb_depth_pairs trajectory_file odometry_name [Rgbd or ICP or RgbdICP]" << endl;
+        cout << "Format: dataset_folder_path trajectory_file odometry_name [Rgbd or ICP or RgbdICP]" << endl;
         return -1;
     }
     
     vector<string> timestamps;
     vector<Mat> Rts;
 
-    const string filename = argv[1];
-    ifstream file( filename.c_str() );
-    if( !file.is_open() )
+    const string dirname = argv[1];
+    tinydir_dir dir;
+    if (tinydir_open(&dir, dirname.c_str()) == -1)
+    {
+        perror("Error opening file");
         return -1;
+    }
+    tinydir_close(&dir);
 
-    char dlmrt = '/';
-    size_t pos = filename.rfind(dlmrt);
-    string dirname = pos == string::npos ? "" : filename.substr(0, pos) + dlmrt;
+    const string dirnameDepth = dirname + "/depth";
+    const string dirnameRgb = dirname + "/rgb";
+    tinydir_dir dirDepth, dirRgb;
+    tinydir_open(&dirDepth, dirnameDepth.c_str());
+    tinydir_open(&dirRgb, dirnameRgb.c_str());
 
     const int timestampLength = 17;
     const int rgbPathLehgth = 17+8;
@@ -159,9 +166,9 @@ int main(int argc, char** argv)
           fy = 525.0f,
           cx = 319.5f,
           cy = 239.5f;
-    if(filename.find("freiburg1") != string::npos)
+    if (dirname.find("freiburg1") != string::npos)
         setCameraMatrixFreiburg1(fx, fy, cx, cy);
-    if(filename.find("freiburg2") != string::npos)
+    if (dirname.find("freiburg2") != string::npos)
         setCameraMatrixFreiburg2(fx, fy, cx, cy);
     Mat cameraMatrix = Mat::eye(3,3,CV_32FC1);
     {
@@ -183,12 +190,28 @@ int main(int argc, char** argv)
 
     MyTickMeter gtm;
     int count = 0;
-    for(int i = 0; !file.eof(); i++)
+
+    while (dirDepth.has_next && dirRgb.has_next)
     {
-        string str;
-        std::getline(file, str);
-        if(str.empty()) break;
-        if(str.at(0) == '#') continue; /* comment */
+        tinydir_file fileDepth;
+        tinydir_readfile(&dirDepth, &fileDepth);
+        
+        tinydir_file fileRgb;
+        tinydir_readfile(&dirRgb, &fileRgb);
+
+        if (fileDepth.is_dir || fileRgb.is_dir)
+        {
+            tinydir_next(&dirDepth);
+            tinydir_next(&dirRgb);
+            continue;
+        }
+
+        string rgbFilename = fileRgb.path;
+        string timestap = fileRgb.name;
+        string depthFilename = fileDepth.path;
+        
+        tinydir_next(&dirDepth);
+        tinydir_next(&dirRgb);
 
         Mat image, depth;
         // Read one pair (rgb and depth)
@@ -197,18 +220,12 @@ int main(int argc, char** argv)
         MyTickMeter tm_bilateral_filter;
 #endif
         {
-            string rgbFilename = str.substr(timestampLength + 1, rgbPathLehgth );
-            string timestap = str.substr(0, timestampLength);
-            string depthFilename = str.substr(2*timestampLength + rgbPathLehgth + 3, depthPathLehgth );
-
-            image = imread(dirname + rgbFilename);
-            depth = imread(dirname + depthFilename, -1);
+            image = imread(rgbFilename);
+            depth = imread(depthFilename, -1);
 
             CV_Assert(!image.empty());
             CV_Assert(!depth.empty());
             CV_Assert(depth.type() == CV_16UC1);
-
-            cout << i << " " << rgbFilename << " " << depthFilename << endl;
 
             // scale depth
             Mat depth_flt;
@@ -236,6 +253,11 @@ int main(int argc, char** argv)
             cvtColor(image, gray, COLOR_BGR2GRAY);
             frame_curr->image = gray;
             frame_curr->depth = depth;
+
+            imshow("gray", gray);
+            imshow("depth", depth);
+
+            char key = (char)waitKey(1);
             
             Mat Rt;
             if(!Rts.empty())
