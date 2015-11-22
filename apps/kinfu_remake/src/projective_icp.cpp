@@ -72,7 +72,7 @@ kfusion::cuda::ProjectiveICP::ProjectiveICP() : angle_thres_(deg2rad(20.f)), dis
     setIterationsNum(vector_iters);
     device::ComputeIcpHelper::allocate_buffer(buffer_);
 
-    shelp_ = cv::Ptr<StreamHelper>(new StreamHelper());
+    shelp_ = cv::makePtr<StreamHelper>();
 }
 
 kfusion::cuda::ProjectiveICP::~ProjectiveICP() {}

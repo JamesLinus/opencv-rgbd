@@ -48,7 +48,7 @@ kfusion::KinFu::KinFu(const KinFuParams& params) : frame_counter_(0), params_(pa
 {
     CV_Assert(params.volume_dims[0] % 32 == 0);
 
-    volume_ = cv::Ptr<cuda::TsdfVolume>(new cuda::TsdfVolume(params_.volume_dims));
+    volume_ = cv::makePtr<cuda::TsdfVolume>(params_.volume_dims);
 
     volume_->setTruncDist(params_.tsdf_trunc_dist);
     volume_->setMaxWeight(params_.tsdf_max_weight);
@@ -57,7 +57,7 @@ kfusion::KinFu::KinFu(const KinFuParams& params) : frame_counter_(0), params_(pa
     volume_->setRaycastStepFactor(params_.raycast_step_factor);
     volume_->setGradientDeltaFactor(params_.gradient_delta_factor);
 
-    icp_ = cv::Ptr<cuda::ProjectiveICP>(new cuda::ProjectiveICP());
+    icp_ = cv::makePtr<cuda::ProjectiveICP>();
     icp_->setDistThreshold(params_.icp_dist_thres);
     icp_->setAngleThreshold(params_.icp_angle_thres);
     icp_->setIterationsNum(params_.icp_iter_num);
