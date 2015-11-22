@@ -2,6 +2,7 @@
 -- https://github.com/premake/premake-core/wiki
 
 local action = _ACTION or ""
+local CUDA_PATH = os.getenv("CUDA_PATH");
 
 solution "opencv-rgbd"
     location ("_project")
@@ -90,6 +91,25 @@ solution "opencv-rgbd"
                 "../opencv-gfx/include",
                 "apps/" .. leaf_name .. "/include",
             }
+
+            if CUDA_PATH ~= nil then
+                includedirs { 
+                    path.join("$(CUDA_PATH)", "include"),
+                }
+                links {
+                    "cuda.lib",
+                    "cudart.lib",
+                    "nvrtc.lib"
+                }
+                configuration {"x86", "windows"}
+                    libdirs {
+                        path.join("$(CUDA_PATH)", "lib/win32"),
+                    }
+                configuration {"x64", "windows"}
+                    libdirs {
+                        path.join("$(CUDA_PATH)", "lib/x64"),
+                    }
+            end
 
             files {
                 "apps/" .. leaf_name .. "/**",
