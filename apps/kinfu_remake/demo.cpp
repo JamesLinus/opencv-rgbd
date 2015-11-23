@@ -3,6 +3,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 //#include <opencv2/viz/vizcore.hpp>
 #include <kfusion/kinfu.hpp>
+#include <time.h>
 
 using namespace kfusion;
 
@@ -63,6 +64,21 @@ struct KinFuApp
         cuda::DeviceArray<Point> cloud = kinfu.tsdf().fetchCloud(cloud_buffer);
         cv::Mat cloud_host(1, (int)cloud.size(), CV_32FC4);
         cloud.download(cloud_host.ptr<Point>());
+
+        char meshFileName[256];
+        time_t now = time(NULL);
+        strftime(meshFileName, 100, "points-%Y-%m-%d_%H-%M-%S.asc", localtime(&now));
+        printf("Writing cloud points to %s\n", meshFileName);
+        FILE *f = fopen(meshFileName, "w+");
+        if (f != NULL)
+        {
+            for (uint i = 0; i < cloud.size(); i++)
+            {
+                auto& point = cloud_host.at<Point>(i);
+                fprintf(f, "%f %f %f\n", point.x, point.y, point.z);
+            }
+            fclose(f);
+        }
         //viz.showWidget("cloud", cv::viz::WCloud(cloud_host));
         //viz.showWidget("cloud", cv::viz::WPaintedCloud(cloud_host));
     }
