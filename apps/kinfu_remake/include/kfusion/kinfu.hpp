@@ -69,7 +69,7 @@ namespace kfusion
 
         void reset();
 
-        bool operator()(const cuda::Depth& dpeth, const cuda::Image& image = cuda::Image());
+        bool operator()(const cuda::Depth& depth, const cuda::DeviceArray2D<PixelRGB>& color = cuda::DeviceArray2D<PixelRGB>());
 
         void renderImage(cuda::Image& image, int flags = 0);
         void renderImage(cuda::Image& image, const Affine3f& pose, int flags = 0);

@@ -86,7 +86,7 @@ struct KinFuApp
     bool execute()
     {
         KinFu& kinfu = *kinfu_;
-        cv::Mat depth, image;
+        cv::Mat depth, color;
         double time_ms = 0;
         bool has_image = false;
 
@@ -97,13 +97,14 @@ struct KinFuApp
                 return std::cout << "Can't grab" << std::endl, false;
 
             capture_.retrieve(depth, cv::CAP_OPENNI_DEPTH_MAP);
-            capture_.retrieve(image, cv::CAP_OPENNI_BGR_IMAGE);
+            capture_.retrieve(color, cv::CAP_OPENNI_BGR_IMAGE);
 
             depth_device_.upload(depth.data, depth.step, depth.rows, depth.cols);
+            color_device_.upload(color.data, color.step, color.rows, color.cols);
 
             {
                 SampledScopeTime fps(time_ms); (void)fps;
-                has_image = kinfu(depth_device_);
+                has_image = kinfu(depth_device_, color_device_);
             }
 
             if (has_image)
@@ -138,6 +139,7 @@ struct KinFuApp
     cv::Mat view_host_;
     cuda::Image view_device_;
     cuda::Depth depth_device_;
+    cuda::DeviceArray2D<PixelRGB> color_device_;
     cuda::DeviceArray<Point> cloud_buffer;
 };
 

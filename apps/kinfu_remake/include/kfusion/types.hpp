@@ -31,11 +31,18 @@ namespace kfusion
         union
         {
             float data[4];
-            struct { float x, y, z; };
+            struct { float x, y, z, w; };
         };
     };
 
-    typedef Point Normal;
+    struct Normal
+    {
+        union
+        {
+            float data[4];
+            struct { float x, y, z; };
+        };
+    };
 
     struct RGB
     {

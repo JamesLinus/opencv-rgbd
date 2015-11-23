@@ -140,7 +140,7 @@ kfusion::Affine3f kfusion::KinFu::getCameraPose (int time) const
     return poses_[time];
 }
 
-bool kfusion::KinFu::operator()(const kfusion::cuda::Depth& depth, const kfusion::cuda::Image& /*image*/)
+bool kfusion::KinFu::operator()(const kfusion::cuda::Depth& depth, const kfusion::cuda::DeviceArray2D<PixelRGB>& color)
 {
     const KinFuParams& p = params_;
     const int LEVELS = icp_->getUsedLevelsNum();
