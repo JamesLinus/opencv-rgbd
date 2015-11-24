@@ -1,12 +1,12 @@
 #include "device.hpp"
 #include "texture_binder.hpp"
 
-using namespace kfusion::device;
+using namespace kf::device;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Volume initialization
 
-namespace kfusion
+namespace kf
 {
     namespace device
     {
@@ -27,7 +27,7 @@ namespace kfusion
     }
 }
 
-void kfusion::device::clear_volume(TsdfVolume volume)
+void kf::device::clear_volume(TsdfVolume volume)
 {
     dim3 block (32, 8);
     dim3 grid (1, 1, 1);
@@ -41,7 +41,7 @@ void kfusion::device::clear_volume(TsdfVolume volume)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Volume integration
 
-namespace kfusion
+namespace kf
 {
     namespace device
     {
@@ -109,7 +109,7 @@ namespace kfusion
     }
 }
 
-void kfusion::device::integrate(const PtrStepSz<ushort>& dists, TsdfVolume& volume, const Aff3f& aff, const Projector& proj)
+void kf::device::integrate(const cuda::PtrStepSz<ushort>& dists, TsdfVolume& volume, const Aff3f& aff, const Projector& proj)
 {
     TsdfIntegrator ti;
     ti.dists_size = make_int2(dists.cols, dists.rows);
@@ -121,7 +121,7 @@ void kfusion::device::integrate(const PtrStepSz<ushort>& dists, TsdfVolume& volu
     dists_tex.addressMode[0] = cudaAddressModeBorder;
     dists_tex.addressMode[1] = cudaAddressModeBorder;
     dists_tex.addressMode[2] = cudaAddressModeBorder;
-    TextureBinder binder(dists, dists_tex, cudaCreateChannelDescHalf()); (void)binder;
+    cuda::TextureBinder binder(dists, dists_tex, cudaCreateChannelDescHalf()); (void)binder;
 
     dim3 block(32, 8);
     dim3 grid(divUp(volume.dims.x, block.x), divUp(volume.dims.y, block.y));
@@ -134,7 +134,7 @@ void kfusion::device::integrate(const PtrStepSz<ushort>& dists, TsdfVolume& volu
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Volume ray casting
 
-namespace kfusion
+namespace kf
 {
     namespace device
     {
@@ -209,7 +209,7 @@ namespace kfusion
             }
 
             __kf_device__
-            void operator()(PtrStepSz<ushort> depth, PtrStep<Normal> normals) const
+            void operator()(cuda::PtrStepSz<ushort> depth, cuda::PtrStep<Normal> normals) const
             {
                 int x = blockIdx.x * blockDim.x + threadIdx.x;
                 int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -277,7 +277,7 @@ namespace kfusion
             }
 
             __kf_device__
-            void operator()(PtrStepSz<Point> points, PtrStep<Normal> normals) const
+            void operator()(cuda::PtrStepSz<Point> points, cuda::PtrStep<Normal> normals) const
             {
                 int x = blockIdx.x * blockDim.x + threadIdx.x;
                 int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -368,16 +368,16 @@ namespace kfusion
         inline TsdfRaycaster::TsdfRaycaster(const TsdfVolume& _volume, const Aff3f& _aff, const Mat3f& _Rinv, const Reprojector& _reproj)
             : volume(_volume), aff(_aff), Rinv(_Rinv), reproj(_reproj) {}
 
-        __global__ void raycast_kernel(const TsdfRaycaster raycaster, PtrStepSz<ushort> depth, PtrStep<Normal> normals)
+        __global__ void raycast_kernel(const TsdfRaycaster raycaster, cuda::PtrStepSz<ushort> depth, cuda::PtrStep<Normal> normals)
         { raycaster(depth, normals); };
 
-        __global__ void raycast_kernel(const TsdfRaycaster raycaster, PtrStepSz<Point> points, PtrStep<Normal> normals)
+        __global__ void raycast_kernel(const TsdfRaycaster raycaster, cuda::PtrStepSz<Point> points, cuda::PtrStep<Normal> normals)
         { raycaster(points, normals); };
 
     }
 }
 
-void kfusion::device::raycast(const TsdfVolume& volume, const Aff3f& aff, const Mat3f& Rinv, const Reprojector& reproj,
+void kf::device::raycast(const TsdfVolume& volume, const Aff3f& aff, const Mat3f& Rinv, const Reprojector& reproj,
                               Depth& depth, Normals& normals, float raycaster_step_factor, float gradient_delta_factor)
 {
     TsdfRaycaster rc(volume, aff, Rinv, reproj);
@@ -390,12 +390,12 @@ void kfusion::device::raycast(const TsdfVolume& volume, const Aff3f& aff, const 
     dim3 block(32, 8);
     dim3 grid (divUp (depth.cols(), block.x), divUp (depth.rows(), block.y));
 
-    raycast_kernel<<<grid, block>>>(rc, (PtrStepSz<ushort>)depth, normals);
+    raycast_kernel<<<grid, block>>>(rc, (cuda::PtrStepSz<ushort>)depth, normals);
     cudaSafeCall (cudaGetLastError ());
 }
 
 
-void kfusion::device::raycast(const TsdfVolume& volume, const Aff3f& aff, const Mat3f& Rinv, const Reprojector& reproj,
+void kf::device::raycast(const TsdfVolume& volume, const Aff3f& aff, const Mat3f& Rinv, const Reprojector& reproj,
                               Points& points, Normals& normals, float raycaster_step_factor, float gradient_delta_factor)
 {
     TsdfRaycaster rc(volume, aff, Rinv, reproj);
@@ -408,14 +408,14 @@ void kfusion::device::raycast(const TsdfVolume& volume, const Aff3f& aff, const 
     dim3 block(32, 8);
     dim3 grid (divUp (points.cols(), block.x), divUp (points.rows(), block.y));
 
-    raycast_kernel<<<grid, block>>>(rc, (PtrStepSz<Point>)points, normals);
+    raycast_kernel<<<grid, block>>>(rc, (cuda::PtrStepSz<Point>)points, normals);
     cudaSafeCall (cudaGetLastError ());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 /// Volume cloud exctraction
 
-namespace kfusion
+namespace kf
 {
     namespace device
     {
@@ -468,7 +468,7 @@ namespace kfusion
                 return unpack_tsdf(*volume(x, y, z), weight);
             }
 
-            __kf_device__ void operator () (PtrSz<Point> output) const
+            __kf_device__ void operator () (cuda::PtrSz<Point> output) const
             {
                 int x = threadIdx.x + blockIdx.x * CTA_SIZE_X;
                 int y = threadIdx.y + blockIdx.y * CTA_SIZE_Y;
@@ -646,7 +646,7 @@ namespace kfusion
 
 
 
-        __global__ void extract_kernel(const FullScan6 fs, PtrSz<Point> output) { fs(output); }
+        __global__ void extract_kernel(const FullScan6 fs, cuda::PtrSz<Point> output) { fs(output); }
 
 
 
@@ -655,7 +655,7 @@ namespace kfusion
             typedef float8 float8;
 
             TsdfVolume volume;
-            PtrSz<Point> points;
+            cuda::PtrSz<Point> points;
             float3 voxel_size_inv;
             float3 gradient_delta;
             Aff3f aff;
@@ -735,7 +735,7 @@ namespace kfusion
     }
 }
 
-size_t kfusion::device::extractPoints (const TsdfVolume& volume, const Aff3f& aff, PtrSz<Point> output)
+size_t kf::device::extractPoints (const TsdfVolume& volume, const Aff3f& aff, cuda::PtrSz<Point> output)
 {
     typedef FullScan6 FS;
     FS fs(volume);
@@ -753,7 +753,7 @@ size_t kfusion::device::extractPoints (const TsdfVolume& volume, const Aff3f& af
     return (size_t)size;
 }
 
-void kfusion::device::extractNormals (const TsdfVolume& volume, const PtrSz<Point>& points, const Aff3f& aff, const Mat3f& Rinv, float gradient_delta_factor, float4* output)
+void kf::device::extractNormals (const TsdfVolume& volume, const cuda::PtrSz<Point>& points, const Aff3f& aff, const Mat3f& Rinv, float gradient_delta_factor, float4* output)
 {
     ExtractNormals en(volume);
     en.points = points;

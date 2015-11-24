@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 
-namespace kfusion
+namespace kf
 {
     namespace cuda
     {

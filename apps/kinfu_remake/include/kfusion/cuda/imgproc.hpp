@@ -2,7 +2,7 @@
 
 #include <kfusion/types.hpp>
 
-namespace kfusion
+namespace kf
 {
     namespace cuda
     {

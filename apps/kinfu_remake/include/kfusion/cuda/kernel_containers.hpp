@@ -10,7 +10,7 @@
 
 #include <cstddef>
 
-namespace kfusion
+namespace kf
 {
     namespace cuda
     {
@@ -61,13 +61,6 @@ namespace kfusion
             int cols;
             int rows;                                                                              
         };
-    }
-
-    namespace device
-    {
-        using kfusion::cuda::PtrSz;
-        using kfusion::cuda::PtrStep;
-        using kfusion::cuda::PtrStepSz;
     }
 }
 

@@ -5,7 +5,7 @@
 
 //#define USE_DEPTH
 
-namespace kfusion
+namespace kf
 {
     namespace device
     {
@@ -15,11 +15,11 @@ namespace kfusion
         typedef unsigned short ushort;
         typedef unsigned char uchar;
 
-        typedef PtrStepSz<ushort> Dists;
-        typedef Array2D<ushort> Depth;
-        typedef Array2D<Normal> Normals;
-        typedef Array2D<Point> Points;
-        typedef Array2D<uchar4> Image;
+        typedef cuda::PtrStepSz<ushort> Dists;
+        typedef cuda::Array2D<ushort> Depth;
+        typedef cuda::Array2D<Normal> Normals;
+        typedef cuda::Array2D<Point> Points;
+        typedef cuda::Array2D<uchar4> Image;
 
         typedef int3   Vec3i;
         typedef float3 Vec3f;
@@ -82,21 +82,21 @@ namespace kfusion
             float rows, cols;
             float2 f, c, finv;
 
-            PtrStep<ushort> dcurr;
-            PtrStep<Normal> ncurr;
-            PtrStep<Point> vcurr;
+            cuda::PtrStep<ushort> dcurr;
+            cuda::PtrStep<Normal> ncurr;
+            cuda::PtrStep<Point> vcurr;
 
             ComputeIcpHelper(float dist_thres, float angle_thres);
             void setLevelIntr(int level_index, float fx, float fy, float cx, float cy);
 
-            void operator()(const Depth& dprev, const Normals& nprev, Array2D<float>& buffer, float* data, cudaStream_t stream);
-            void operator()(const Points& vprev, const Normals& nprev, Array2D<float>& buffer, float* data, cudaStream_t stream);
+            void operator()(const Depth& dprev, const Normals& nprev, cuda::Array2D<float>& buffer, float* data, cudaStream_t stream);
+            void operator()(const Points& vprev, const Normals& nprev, cuda::Array2D<float>& buffer, float* data, cudaStream_t stream);
 
-            static void allocate_buffer(Array2D<float>& buffer, int partials_count = -1);
+            static void allocate_buffer(cuda::Array2D<float>& buffer, int partials_count = -1);
 
             //private:
             __kf_device__ int find_coresp(int x, int y, float3& n, float3& d, float3& s) const;
-            __kf_device__ void partial_reduce(const float row[7], PtrStep<float>& partial_buffer) const;
+            __kf_device__ void partial_reduce(const float row[7], cuda::PtrStep<float>& partial_buffer) const;
             __kf_device__ float2 proj(const float3& p) const;
             __kf_device__ float3 reproj(float x, float y, float z)  const;
         };
@@ -135,11 +135,11 @@ namespace kfusion
 
 
         //exctraction functionality
-        size_t extractPoints(const TsdfVolume& volume, const Aff3f& aff, PtrSz<Point> output);
-        void extractNormals(const TsdfVolume& volume, const PtrSz<Point>& points, const Aff3f& aff, const Mat3f& Rinv, float gradient_delta_factor, float4* output);
+        size_t extractPoints(const TsdfVolume& volume, const Aff3f& aff, cuda::PtrSz<Point> output);
+        void extractNormals(const TsdfVolume& volume, const cuda::PtrSz<Point>& points, const Aff3f& aff, const Mat3f& Rinv, float gradient_delta_factor, float4* output);
 
         struct float8  { float x, y, z, w, c1, c2, c3, c4; };
         struct float12 { float x, y, z, w, normal_x, normal_y, normal_z, n4, c1, c2, c3, c4; };
-        void mergePointNormal(const Array<Point>& cloud, const Array<float8>& normals, const Array<float12>& output);
+        void mergePointNormal(const cuda::Array<Point>& cloud, const cuda::Array<float8>& normals, const cuda::Array<float12>& output);
     }
 }

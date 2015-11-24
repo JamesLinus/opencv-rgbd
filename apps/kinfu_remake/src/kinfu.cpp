@@ -2,12 +2,12 @@
 #include "internal.hpp"
 
 using namespace std;
-using namespace kfusion;
-using namespace kfusion::cuda;
+using namespace kf;
+using namespace kf::cuda;
 
 static inline float deg2rad (float alpha) { return alpha * 0.017453293f; }
 
-kfusion::KinFuParams kfusion::KinFuParams::default_params()
+kf::KinFuParams kf::KinFuParams::default_params()
 {
     const int iters[] = {10, 5, 4, 0};
     const int levels = sizeof(iters)/sizeof(iters[0]);
@@ -44,7 +44,7 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
     return p;
 }
 
-kfusion::KinFu::KinFu(const KinFuParams& params) : frame_counter_(0), params_(params)
+kf::KinFu::KinFu(const KinFuParams& params) : frame_counter_(0), params_(params)
 {
     CV_Assert(params.volume_dims[0] % 32 == 0);
 
@@ -66,25 +66,25 @@ kfusion::KinFu::KinFu(const KinFuParams& params) : frame_counter_(0), params_(pa
     reset();
 }
 
-const kfusion::KinFuParams& kfusion::KinFu::params() const
+const kf::KinFuParams& kf::KinFu::params() const
 { return params_; }
 
-kfusion::KinFuParams& kfusion::KinFu::params()
+kf::KinFuParams& kf::KinFu::params()
 { return params_; }
 
-const kfusion::cuda::TsdfVolume& kfusion::KinFu::tsdf() const
+const kf::cuda::TsdfVolume& kf::KinFu::tsdf() const
 { return *volume_; }
 
-kfusion::cuda::TsdfVolume& kfusion::KinFu::tsdf()
+kf::cuda::TsdfVolume& kf::KinFu::tsdf()
 { return *volume_; }
 
-const kfusion::cuda::ProjectiveICP& kfusion::KinFu::icp() const
+const kf::cuda::ProjectiveICP& kf::KinFu::icp() const
 { return *icp_; }
 
-kfusion::cuda::ProjectiveICP& kfusion::KinFu::icp()
+kf::cuda::ProjectiveICP& kf::KinFu::icp()
 { return *icp_; }
 
-void kfusion::KinFu::allocate_buffers()
+void kf::KinFu::allocate_buffers()
 {
     const int LEVELS = cuda::ProjectiveICP::MAX_PYRAMID_LEVELS;
 
@@ -121,7 +121,7 @@ void kfusion::KinFu::allocate_buffers()
     points_.create(params_.rows, params_.cols);
 }
 
-void kfusion::KinFu::reset()
+void kf::KinFu::reset()
 {
     if (frame_counter_)
         cout << "Reset" << endl;
@@ -133,14 +133,14 @@ void kfusion::KinFu::reset()
     volume_->clear();
 }
 
-cv::Affine3f kfusion::KinFu::getCameraPose (int time) const
+cv::Affine3f kf::KinFu::getCameraPose (int time) const
 {
     if (time > (int)poses_.size () || time < 0)
         time = (int)poses_.size () - 1;
     return poses_[time];
 }
 
-bool kfusion::KinFu::operator()(const kfusion::cuda::Depth& depth, const kfusion::cuda::Array2D<PixelRGB>& color)
+bool kf::KinFu::operator()(const kf::cuda::Depth& depth, const kf::cuda::Array2D<PixelRGB>& color)
 {
     const KinFuParams& p = params_;
     const int LEVELS = icp_->getUsedLevelsNum();
@@ -149,7 +149,7 @@ bool kfusion::KinFu::operator()(const kfusion::cuda::Depth& depth, const kfusion
     cuda::depthBilateralFilter(depth, curr_.depth_pyr[0], p.bilateral_kernel_size, p.bilateral_sigma_spatial, p.bilateral_sigma_depth);
 
     if (p.icp_truncate_depth_dist > 0)
-        kfusion::cuda::depthTruncation(curr_.depth_pyr[0], p.icp_truncate_depth_dist);
+        kf::cuda::depthTruncation(curr_.depth_pyr[0], p.icp_truncate_depth_dist);
 
     for (int i = 1; i < LEVELS; ++i)
         cuda::depthBuildPyramid(curr_.depth_pyr[i-1], curr_.depth_pyr[i], p.bilateral_sigma_depth);
@@ -224,7 +224,7 @@ bool kfusion::KinFu::operator()(const kfusion::cuda::Depth& depth, const kfusion
     return ++frame_counter_, true;
 }
 
-void kfusion::KinFu::renderImage(cuda::Image& image, int flag)
+void kf::KinFu::renderImage(cuda::Image& image, int flag)
 {
     const KinFuParams& p = params_;
     image.create(p.rows, flag != 3 ? p.cols : p.cols * 2);
@@ -251,7 +251,7 @@ void kfusion::KinFu::renderImage(cuda::Image& image, int flag)
 }
 
 
-void kfusion::KinFu::renderImage(cuda::Image& image, const cv::Affine3f& pose, int flag)
+void kf::KinFu::renderImage(cuda::Image& image, const cv::Affine3f& pose, int flag)
 {
     const KinFuParams& p = params_;
     image.create(p.rows, flag != 3 ? p.cols : p.cols * 2);

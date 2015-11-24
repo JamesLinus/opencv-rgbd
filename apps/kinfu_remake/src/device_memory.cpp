@@ -4,7 +4,7 @@
 #include <iostream>
 #include <cstdlib>
 
-void kfusion::cuda::error(const char *error_string, const char *file, const int line, const char *func)
+void kf::cuda::error(const char *error_string, const char *file, const int line, const char *func)
 {
     std::cout << "KinFu2 error: " << error_string << "\t" << file << ":" << line << std::endl;
     exit(0);
@@ -43,19 +43,19 @@ void kfusion::cuda::error(const char *error_string, const char *file, const int 
 
 ////////////////////////    Array    /////////////////////////////
     
-kfusion::cuda::Memory::Memory() : data_(0), sizeBytes_(0), refcount_(0) {}
-kfusion::cuda::Memory::Memory(void *ptr_arg, size_t sizeBytes_arg) : data_(ptr_arg), sizeBytes_(sizeBytes_arg), refcount_(0){}
-kfusion::cuda::Memory::Memory(size_t sizeBtes_arg)  : data_(0), sizeBytes_(0), refcount_(0) { create(sizeBtes_arg); }
-kfusion::cuda::Memory::~Memory() { release(); }
+kf::cuda::Memory::Memory() : data_(0), sizeBytes_(0), refcount_(0) {}
+kf::cuda::Memory::Memory(void *ptr_arg, size_t sizeBytes_arg) : data_(ptr_arg), sizeBytes_(sizeBytes_arg), refcount_(0){}
+kf::cuda::Memory::Memory(size_t sizeBtes_arg)  : data_(0), sizeBytes_(0), refcount_(0) { create(sizeBtes_arg); }
+kf::cuda::Memory::~Memory() { release(); }
 
-kfusion::cuda::Memory::Memory(const Memory& other_arg)
+kf::cuda::Memory::Memory(const Memory& other_arg)
     : data_(other_arg.data_), sizeBytes_(other_arg.sizeBytes_), refcount_(other_arg.refcount_)
 {
     if( refcount_ )
         CV_XADD(refcount_, 1);
 }
 
-kfusion::cuda::Memory& kfusion::cuda::Memory::operator = (const kfusion::cuda::Memory& other_arg)
+kf::cuda::Memory& kf::cuda::Memory::operator = (const kf::cuda::Memory& other_arg)
 {
     if( this != &other_arg )
     {
@@ -70,7 +70,7 @@ kfusion::cuda::Memory& kfusion::cuda::Memory::operator = (const kfusion::cuda::M
     return *this;
 }
 
-void kfusion::cuda::Memory::create(size_t sizeBytes_arg)
+void kf::cuda::Memory::create(size_t sizeBytes_arg)
 {
     if (sizeBytes_arg == sizeBytes_)
         return;
@@ -90,7 +90,7 @@ void kfusion::cuda::Memory::create(size_t sizeBytes_arg)
     }
 }
 
-void kfusion::cuda::Memory::copyTo(Memory& other) const
+void kf::cuda::Memory::copyTo(Memory& other) const
 {
     if (empty())
         other.release();
@@ -101,7 +101,7 @@ void kfusion::cuda::Memory::copyTo(Memory& other) const
     }
 }
 
-void kfusion::cuda::Memory::release()
+void kf::cuda::Memory::release()
 {
     if( refcount_ && CV_XADD(refcount_, -1) == 1 )
     {
@@ -114,52 +114,52 @@ void kfusion::cuda::Memory::release()
     refcount_ = 0;
 }
 
-void kfusion::cuda::Memory::upload(const void *host_ptr_arg, size_t sizeBytes_arg)
+void kf::cuda::Memory::upload(const void *host_ptr_arg, size_t sizeBytes_arg)
 {
     create(sizeBytes_arg);
     cudaSafeCall( cudaMemcpy(data_, host_ptr_arg, sizeBytes_, cudaMemcpyHostToDevice) );
 }
 
-void kfusion::cuda::Memory::download(void *host_ptr_arg) const
+void kf::cuda::Memory::download(void *host_ptr_arg) const
 {    
     cudaSafeCall( cudaMemcpy(host_ptr_arg, data_, sizeBytes_, cudaMemcpyDeviceToHost) );
 }          
 
-void kfusion::cuda::Memory::swap(Memory& other_arg)
+void kf::cuda::Memory::swap(Memory& other_arg)
 {
     std::swap(data_, other_arg.data_);
     std::swap(sizeBytes_, other_arg.sizeBytes_);
     std::swap(refcount_, other_arg.refcount_);
 }
 
-bool kfusion::cuda::Memory::empty() const { return !data_; }
-size_t kfusion::cuda::Memory::sizeBytes() const { return sizeBytes_; }
+bool kf::cuda::Memory::empty() const { return !data_; }
+size_t kf::cuda::Memory::sizeBytes() const { return sizeBytes_; }
 
 
 ////////////////////////    Array2D    /////////////////////////////
 
-kfusion::cuda::Memory2D::Memory2D() : data_(0), step_(0), colsBytes_(0), rows_(0), refcount_(0) {}
+kf::cuda::Memory2D::Memory2D() : data_(0), step_(0), colsBytes_(0), rows_(0), refcount_(0) {}
 
-kfusion::cuda::Memory2D::Memory2D(int rows_arg, int colsBytes_arg)
+kf::cuda::Memory2D::Memory2D(int rows_arg, int colsBytes_arg)
     : data_(0), step_(0), colsBytes_(0), rows_(0), refcount_(0)
 { 
     create(rows_arg, colsBytes_arg); 
 }
 
-kfusion::cuda::Memory2D::Memory2D(int rows_arg, int colsBytes_arg, void *data_arg, size_t step_arg)
+kf::cuda::Memory2D::Memory2D(int rows_arg, int colsBytes_arg, void *data_arg, size_t step_arg)
     :  data_(data_arg), step_(step_arg), colsBytes_(colsBytes_arg), rows_(rows_arg), refcount_(0) {}
 
-kfusion::cuda::Memory2D::~Memory2D() { release(); }
+kf::cuda::Memory2D::~Memory2D() { release(); }
 
 
-kfusion::cuda::Memory2D::Memory2D(const Memory2D& other_arg) :
+kf::cuda::Memory2D::Memory2D(const Memory2D& other_arg) :
     data_(other_arg.data_), step_(other_arg.step_), colsBytes_(other_arg.colsBytes_), rows_(other_arg.rows_), refcount_(other_arg.refcount_)
 {
     if( refcount_ )
         CV_XADD(refcount_, 1);
 }
 
-kfusion::cuda::Memory2D& kfusion::cuda::Memory2D::operator = (const kfusion::cuda::Memory2D& other_arg)
+kf::cuda::Memory2D& kf::cuda::Memory2D::operator = (const kf::cuda::Memory2D& other_arg)
 {
     if( this != &other_arg )
     {
@@ -177,7 +177,7 @@ kfusion::cuda::Memory2D& kfusion::cuda::Memory2D::operator = (const kfusion::cud
     return *this;
 }
 
-void kfusion::cuda::Memory2D::create(int rows_arg, int colsBytes_arg)
+void kf::cuda::Memory2D::create(int rows_arg, int colsBytes_arg)
 {
     if (colsBytes_ == colsBytes_arg && rows_ == rows_arg)
         return;
@@ -198,7 +198,7 @@ void kfusion::cuda::Memory2D::create(int rows_arg, int colsBytes_arg)
     }
 }
 
-void kfusion::cuda::Memory2D::release()
+void kf::cuda::Memory2D::release()
 {
     if( refcount_ && CV_XADD(refcount_, -1) == 1 )
     {
@@ -214,7 +214,7 @@ void kfusion::cuda::Memory2D::release()
     refcount_ = 0;
 }
 
-void kfusion::cuda::Memory2D::copyTo(Memory2D& other) const
+void kf::cuda::Memory2D::copyTo(Memory2D& other) const
 {
     if (empty())
         other.release();
@@ -225,18 +225,18 @@ void kfusion::cuda::Memory2D::copyTo(Memory2D& other) const
     }
 }
 
-void kfusion::cuda::Memory2D::upload(const void *host_ptr_arg, size_t host_step_arg, int rows_arg, int colsBytes_arg)
+void kf::cuda::Memory2D::upload(const void *host_ptr_arg, size_t host_step_arg, int rows_arg, int colsBytes_arg)
 {
     create(rows_arg, colsBytes_arg);
     cudaSafeCall( cudaMemcpy2D(data_, step_, host_ptr_arg, host_step_arg, colsBytes_, rows_, cudaMemcpyHostToDevice) );        
 }
 
-void kfusion::cuda::Memory2D::download(void *host_ptr_arg, size_t host_step_arg) const
+void kf::cuda::Memory2D::download(void *host_ptr_arg, size_t host_step_arg) const
 {    
     cudaSafeCall( cudaMemcpy2D(host_ptr_arg, host_step_arg, data_, step_, colsBytes_, rows_, cudaMemcpyDeviceToHost) );
 }      
 
-void kfusion::cuda::Memory2D::swap(Memory2D& other_arg)
+void kf::cuda::Memory2D::swap(Memory2D& other_arg)
 {    
     std::swap(data_, other_arg.data_);
     std::swap(step_, other_arg.step_);
@@ -246,7 +246,7 @@ void kfusion::cuda::Memory2D::swap(Memory2D& other_arg)
     std::swap(refcount_, other_arg.refcount_);                 
 }
 
-bool kfusion::cuda::Memory2D::empty() const { return !data_; }
-int kfusion::cuda::Memory2D::colsBytes() const { return colsBytes_; }
-int kfusion::cuda::Memory2D::rows() const { return rows_; }
-size_t kfusion::cuda::Memory2D::step() const { return step_; }
+bool kf::cuda::Memory2D::empty() const { return !data_; }
+int kf::cuda::Memory2D::colsBytes() const { return colsBytes_; }
+int kf::cuda::Memory2D::rows() const { return rows_; }
+size_t kf::cuda::Memory2D::step() const { return step_; }

@@ -3,7 +3,7 @@
 #include "kfusion/cuda/device_array.hpp"
 #include "../safe_call.hpp"
 
-namespace kfusion
+namespace kf
 {
     namespace cuda
     {
@@ -51,10 +51,5 @@ namespace kfusion
         private:
             const struct textureReference *texref;
         };
-    }
-
-    namespace device
-    {
-        using kfusion::cuda::TextureBinder;
     }
 }

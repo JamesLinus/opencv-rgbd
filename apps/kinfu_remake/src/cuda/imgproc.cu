@@ -3,11 +3,11 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Depth bilateral filter
 
-namespace kfusion
+namespace kf
 {
     namespace device
     {
-        __global__ void bilateral_kernel(const PtrStepSz<ushort> src, PtrStep<ushort> dst, const int ksz, const float sigma_spatial2_inv_half, const float sigma_depth2_inv_half)
+        __global__ void bilateral_kernel(const cuda::PtrStepSz<ushort> src, cuda::PtrStep<ushort> dst, const int ksz, const float sigma_spatial2_inv_half, const float sigma_depth2_inv_half)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -43,7 +43,7 @@ namespace kfusion
     }
 }
 
-void kfusion::device::bilateralFilter (const Depth& src, Depth& dst, int kernel_size, float sigma_spatial, float sigma_depth)
+void kf::device::bilateralFilter (const Depth& src, Depth& dst, int kernel_size, float sigma_spatial, float sigma_depth)
 {
     sigma_depth *= 1000; // meters -> mm
 
@@ -58,11 +58,11 @@ void kfusion::device::bilateralFilter (const Depth& src, Depth& dst, int kernel_
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Depth truncation
 
-namespace kfusion
+namespace kf
 {
     namespace device
     {
-        __global__ void truncate_depth_kernel(PtrStepSz<ushort> depth, ushort max_dist /*mm*/)
+        __global__ void truncate_depth_kernel(cuda::PtrStepSz<ushort> depth, ushort max_dist /*mm*/)
         {
             int x = blockIdx.x * blockDim.x + threadIdx.x;
             int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -74,7 +74,7 @@ namespace kfusion
     }
 }
 
-void kfusion::device::truncateDepth(Depth& depth, float max_dist /*meters*/)
+void kf::device::truncateDepth(Depth& depth, float max_dist /*meters*/)
 {
     dim3 block (32, 8);
     dim3 grid (divUp (depth.cols (), block.x), divUp (depth.rows (), block.y));
@@ -86,11 +86,11 @@ void kfusion::device::truncateDepth(Depth& depth, float max_dist /*meters*/)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Build depth pyramid
 
-namespace kfusion
+namespace kf
 {
     namespace device
     {
-        __global__ void pyramid_kernel(const PtrStepSz<ushort> src, PtrStepSz<ushort> dst, float sigma_depth_mult3)
+        __global__ void pyramid_kernel(const cuda::PtrStepSz<ushort> src, cuda::PtrStepSz<ushort> dst, float sigma_depth_mult3)
         {
             int x = blockIdx.x * blockDim.x + threadIdx.x;
             int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -123,7 +123,7 @@ namespace kfusion
     }
 }
 
-void kfusion::device::depthPyr(const Depth& source, Depth& pyramid, float sigma_depth)
+void kf::device::depthPyr(const Depth& source, Depth& pyramid, float sigma_depth)
 {
     sigma_depth *= 1000; // meters -> mm
 
@@ -137,11 +137,11 @@ void kfusion::device::depthPyr(const Depth& source, Depth& pyramid, float sigma_
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Compute normals
 
-namespace kfusion
+namespace kf
 {
     namespace device
     {
-        __global__ void compute_normals_kernel(const PtrStepSz<ushort> depth, const Reprojector reproj, PtrStep<Normal> normals)
+        __global__ void compute_normals_kernel(const cuda::PtrStepSz<ushort> depth, const Reprojector reproj, cuda::PtrStep<Normal> normals)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -173,7 +173,7 @@ namespace kfusion
             normals(y, x) = n_out;
         }
 
-        __global__ void mask_depth_kernel(const PtrStep<Normal> normals, PtrStepSz<ushort> depth)
+        __global__ void mask_depth_kernel(const cuda::PtrStep<Normal> normals, cuda::PtrStepSz<ushort> depth)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -188,7 +188,7 @@ namespace kfusion
     }
 }
 
-void kfusion::device::computeNormalsAndMaskDepth(const Reprojector& reproj, Depth& depth, Normals& normals)
+void kf::device::computeNormalsAndMaskDepth(const Reprojector& reproj, Depth& depth, Normals& normals)
 {
     dim3 block (32, 8);
     dim3 grid (divUp (depth.cols (), block.x), divUp (depth.rows (), block.y));
@@ -202,11 +202,11 @@ void kfusion::device::computeNormalsAndMaskDepth(const Reprojector& reproj, Dept
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Compute computePointNormals
 
-namespace kfusion
+namespace kf
 {
     namespace device
     {
-        __global__ void points_normals_kernel(const Reprojector reproj, const PtrStepSz<ushort> depth, PtrStep<Point> points, PtrStep<Normal> normals)
+        __global__ void points_normals_kernel(const Reprojector reproj, const cuda::PtrStepSz<ushort> depth, cuda::PtrStep<Point> points, cuda::PtrStep<Normal> normals)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -239,7 +239,7 @@ namespace kfusion
     }
 }
 
-void kfusion::device::computePointNormals(const Reprojector& reproj, const Depth& depth, Points& points, Normals& normals)
+void kf::device::computePointNormals(const Reprojector& reproj, const Depth& depth, Points& points, Normals& normals)
 {
     dim3 block (32, 8);
     dim3 grid (divUp (depth.cols (), block.x), divUp (depth.rows (), block.y));
@@ -251,11 +251,11 @@ void kfusion::device::computePointNormals(const Reprojector& reproj, const Depth
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Compute dists
 
-namespace kfusion
+namespace kf
 {
     namespace device
     {
-        __global__ void compute_dists_kernel(const PtrStepSz<ushort> depth, Dists dists, float2 finv, float2 c)
+        __global__ void compute_dists_kernel(const cuda::PtrStepSz<ushort> depth, Dists dists, float2 finv, float2 c)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -272,7 +272,7 @@ namespace kfusion
     }
 }
 
-void kfusion::device::compute_dists(const Depth& depth, Dists dists, float2 f, float2 c)
+void kf::device::compute_dists(const Depth& depth, Dists dists, float2 f, float2 c)
 {
     dim3 block (32, 8);
     dim3 grid (divUp (depth.cols (), block.x), divUp (depth.rows (), block.y));
@@ -281,11 +281,11 @@ void kfusion::device::compute_dists(const Depth& depth, Dists dists, float2 f, f
     cudaSafeCall ( cudaGetLastError () );
 }
 
-namespace kfusion
+namespace kf
 {
     namespace device
     {
-        __global__ void resize_depth_normals_kernel(const PtrStep<ushort> dsrc, const PtrStep<float4> nsrc, PtrStepSz<ushort> ddst, PtrStep<float4> ndst)
+        __global__ void resize_depth_normals_kernel(const cuda::PtrStep<ushort> dsrc, const cuda::PtrStep<float4> nsrc, cuda::PtrStepSz<ushort> ddst, cuda::PtrStep<float4> ndst)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -325,7 +325,7 @@ namespace kfusion
     }
 }
 
-void kfusion::device::resizeDepthNormals(const Depth& depth, const Normals& normals, Depth& depth_out, Normals& normals_out)
+void kf::device::resizeDepthNormals(const Depth& depth, const Normals& normals, Depth& depth_out, Normals& normals_out)
 {
     int in_cols = depth.cols ();
     int in_rows = depth.rows ();
@@ -340,11 +340,11 @@ void kfusion::device::resizeDepthNormals(const Depth& depth, const Normals& norm
     cudaSafeCall ( cudaGetLastError () );
 }
 
-namespace kfusion
+namespace kf
 {
     namespace device
     {
-        __global__ void resize_points_normals_kernel(const PtrStep<Point> vsrc, const PtrStep<Normal> nsrc, PtrStepSz<Point> vdst, PtrStep<Normal> ndst)
+        __global__ void resize_points_normals_kernel(const cuda::PtrStep<Point> vsrc, const cuda::PtrStep<Normal> nsrc, cuda::PtrStepSz<Point> vdst, cuda::PtrStep<Normal> ndst)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -380,7 +380,7 @@ namespace kfusion
     }
 }
 
-void kfusion::device::resizePointsNormals(const Points& points, const Normals& normals, Points& points_out, Normals& normals_out)
+void kf::device::resizePointsNormals(const Points& points, const Normals& normals, Points& points_out, Normals& normals_out)
 {
     int out_cols = points.cols () / 2;
     int out_rows = points.rows () / 2;
@@ -392,12 +392,12 @@ void kfusion::device::resizePointsNormals(const Points& points, const Normals& n
     cudaSafeCall ( cudaGetLastError () );
 }
 
-namespace kfusion
+namespace kf
 {
     namespace device
     {
-        __global__ void render_image_kernel(const PtrStep<ushort> depth, const PtrStep<Normal> normals,
-                                            const Reprojector reproj, const float3 light_pose, PtrStepSz<uchar4> dst)
+        __global__ void render_image_kernel(const cuda::PtrStep<ushort> depth, const cuda::PtrStep<Normal> normals,
+                                            const Reprojector reproj, const float3 light_pose, cuda::PtrStepSz<uchar4> dst)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -450,8 +450,8 @@ namespace kfusion
             dst(y, x) = out;
         }
 
-        __global__ void render_image_kernel(const PtrStep<Point> points, const PtrStep<Normal> normals,
-                                            const Reprojector reproj, const float3 light_pose, PtrStepSz<uchar4> dst)
+        __global__ void render_image_kernel(const cuda::PtrStep<Point> points, const cuda::PtrStep<Normal> normals,
+                                            const Reprojector reproj, const float3 light_pose, cuda::PtrStepSz<uchar4> dst)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -506,29 +506,29 @@ namespace kfusion
     }
 }
 
-void kfusion::device::renderImage(const Depth& depth, const Normals& normals, const Reprojector& reproj, const float3& light_pose, Image& image)
+void kf::device::renderImage(const Depth& depth, const Normals& normals, const Reprojector& reproj, const float3& light_pose, Image& image)
 {
     dim3 block (32, 8);
     dim3 grid (divUp (depth.cols(), block.x), divUp (depth.rows(), block.y));
 
-    render_image_kernel<<<grid, block>>>((PtrStep<ushort>)depth, normals, reproj, light_pose, image);
+    render_image_kernel<<<grid, block>>>((cuda::PtrStep<ushort>)depth, normals, reproj, light_pose, image);
     cudaSafeCall ( cudaGetLastError () );
 }
 
-void kfusion::device::renderImage(const Points& points, const Normals& normals, const Reprojector& reproj, const Vec3f& light_pose, Image& image)
+void kf::device::renderImage(const Points& points, const Normals& normals, const Reprojector& reproj, const Vec3f& light_pose, Image& image)
 {
     dim3 block (32, 8);
     dim3 grid (divUp (points.cols(), block.x), divUp (points.rows(), block.y));
 
-    render_image_kernel<<<grid, block>>>((PtrStep<Point>)points, normals, reproj, light_pose, image);
+    render_image_kernel<<<grid, block>>>((cuda::PtrStep<Point>)points, normals, reproj, light_pose, image);
     cudaSafeCall ( cudaGetLastError () );
 }
 
-namespace kfusion
+namespace kf
 {
     namespace device
     {
-        __global__ void tangent_colors_kernel(PtrStepSz<Normal> normals, PtrStep<uchar4> colors)
+        __global__ void tangent_colors_kernel(cuda::PtrStepSz<Normal> normals, cuda::PtrStep<uchar4> colors)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -552,7 +552,7 @@ namespace kfusion
     }
 }
 
-void kfusion::device::renderTangentColors(const Normals& normals, Image& image)
+void kf::device::renderTangentColors(const Normals& normals, Image& image)
 {
     dim3 block (32, 8);
     dim3 grid (divUp (normals.cols(), block.x), divUp (normals.rows(), block.y));
@@ -562,11 +562,11 @@ void kfusion::device::renderTangentColors(const Normals& normals, Image& image)
 }
 
 
-namespace kfusion
+namespace kf
 {
     namespace device
     {
-        __global__ void mergePointNormalKernel (const Point* cloud, const float8* normals, PtrSz<float12> output)
+        __global__ void mergePointNormalKernel (const Point* cloud, const float8* normals, cuda::PtrSz<float12> output)
         {
             int idx = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -590,7 +590,7 @@ namespace kfusion
     }
 }
 
-void kfusion::device::mergePointNormal (const Array<Point>& cloud, const Array<float8>& normals, const Array<float12>& output)
+void kf::device::mergePointNormal (const cuda::Array<Point>& cloud, const cuda::Array<float8>& normals, const cuda::Array<float12>& output)
 {
     const int block = 256;
     int total = (int)output.size ();

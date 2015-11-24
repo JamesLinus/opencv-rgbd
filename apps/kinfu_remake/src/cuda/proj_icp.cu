@@ -2,7 +2,7 @@
 #include "texture_binder.hpp"
 
 
-namespace kfusion
+namespace kf
 {
     namespace device
     {
@@ -109,7 +109,7 @@ namespace kfusion
 #endif
 
         __kf_device__
-        void ComputeIcpHelper::partial_reduce(const float row[7], PtrStep<float>& partial_buf) const
+        void ComputeIcpHelper::partial_reduce(const float row[7], cuda::PtrStep<float>& partial_buf) const
         {
             volatile __shared__ float smem[Policy::CTA_SIZE];
             int tid = Block::flattenedThreadId ();
@@ -347,7 +347,7 @@ namespace kfusion
          STOR
         }
 
-        __global__ void icp_helper_kernel(const ComputeIcpHelper helper, PtrStep<float> partial_buf)
+        __global__ void icp_helper_kernel(const ComputeIcpHelper helper, cuda::PtrStep<float> partial_buf)
         {
             int x = threadIdx.x + blockIdx.x * ComputeIcpHelper::Policy::CTA_SIZE_X;
             int y = threadIdx.y + blockIdx.y * ComputeIcpHelper::Policy::CTA_SIZE_Y;
@@ -370,7 +370,7 @@ namespace kfusion
             helper.partial_reduce(row, partial_buf);
         }
 
-        __global__ void icp_final_reduce_kernel(const PtrStep<float> partial_buf, const int length, float* final_buf)
+        __global__ void icp_final_reduce_kernel(const cuda::PtrStep<float> partial_buf, const int length, float* final_buf)
         {
             const float *beg = partial_buf.ptr(blockIdx.x);
             const float *end = beg + length;
@@ -395,12 +395,12 @@ namespace kfusion
     }
 }
 
-void kfusion::device::ComputeIcpHelper::operator()(const Depth& dprev, const Normals& nprev, Array2D<float>& buffer, float* data, cudaStream_t s)
+void kf::device::ComputeIcpHelper::operator()(const Depth& dprev, const Normals& nprev, cuda::Array2D<float>& buffer, float* data, cudaStream_t s)
 {
     dprev_tex.filterMode = cudaFilterModePoint;
     nprev_tex.filterMode = cudaFilterModePoint;
-    TextureBinder dprev_binder(dprev, dprev_tex);
-    TextureBinder nprev_binder(nprev, nprev_tex);
+    cuda::TextureBinder dprev_binder(dprev, dprev_tex);
+    cuda::TextureBinder nprev_binder(nprev, nprev_tex);
 
     dim3 block(Policy::CTA_SIZE_X, Policy::CTA_SIZE_Y);
     dim3 grid(divUp ((int)cols, block.x), divUp ((int)rows, block.y));
@@ -420,12 +420,12 @@ void kfusion::device::ComputeIcpHelper::operator()(const Depth& dprev, const Nor
     cudaSafeCall ( cudaGetLastError () );
 }
 
-void kfusion::device::ComputeIcpHelper::operator()(const Points& vprev, const Normals& nprev, Array2D<float>& buffer, float* data, cudaStream_t s)
+void kf::device::ComputeIcpHelper::operator()(const Points& vprev, const Normals& nprev, cuda::Array2D<float>& buffer, float* data, cudaStream_t s)
 {
     dprev_tex.filterMode = cudaFilterModePoint;
     nprev_tex.filterMode = cudaFilterModePoint;
-    TextureBinder vprev_binder(vprev, vprev_tex);
-    TextureBinder nprev_binder(nprev, nprev_tex);
+    cuda::TextureBinder vprev_binder(vprev, vprev_tex);
+    cuda::TextureBinder nprev_binder(nprev, nprev_tex);
 
     dim3 block(Policy::CTA_SIZE_X, Policy::CTA_SIZE_Y);
     dim3 grid(divUp ((int)cols, block.x), divUp ((int)rows, block.y));
@@ -446,7 +446,7 @@ void kfusion::device::ComputeIcpHelper::operator()(const Points& vprev, const No
 }
 
 
-void kfusion::device::ComputeIcpHelper::allocate_buffer(Array2D<float>& buffer, int partials_count)
+void kf::device::ComputeIcpHelper::allocate_buffer(cuda::Array2D<float>& buffer, int partials_count)
 { 
     if (partials_count < 0)
     {
@@ -469,8 +469,8 @@ void kfusion::device::ComputeIcpHelper::allocate_buffer(Array2D<float>& buffer, 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// ComputeIcpHelper::PageLockHelper
 
-kfusion::device::ComputeIcpHelper::PageLockHelper::PageLockHelper() : data(0)
+kf::device::ComputeIcpHelper::PageLockHelper::PageLockHelper() : data(0)
 { cudaSafeCall( cudaMallocHost((void **)&data, Policy::TOTAL * sizeof(float)) );  }
 
-kfusion::device::ComputeIcpHelper::PageLockHelper::~PageLockHelper()
+kf::device::ComputeIcpHelper::PageLockHelper::~PageLockHelper()
 {   cudaSafeCall( cudaFreeHost(data) ); data = 0; }

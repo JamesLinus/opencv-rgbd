@@ -1,27 +1,27 @@
 #include "precomp.hpp"
 
-using namespace kfusion;
-using namespace kfusion::cuda;
+using namespace kf;
+using namespace kf::cuda;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// TsdfVolume::Entry
 
-float kfusion::cuda::TsdfVolume::Entry::half2float(half)
+float kf::cuda::TsdfVolume::Entry::half2float(half)
 { throw "Not implemented"; }
 
-kfusion::cuda::TsdfVolume::Entry::half kfusion::cuda::TsdfVolume::Entry::float2half(float value)
+kf::cuda::TsdfVolume::Entry::half kf::cuda::TsdfVolume::Entry::float2half(float value)
 { throw "Not implemented"; }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// TsdfVolume
 
-kfusion::cuda::TsdfVolume::TsdfVolume(const cv::Vec3i& dims) : data_(), trunc_dist_(0.03f), max_weight_(128), dims_(dims),
+kf::cuda::TsdfVolume::TsdfVolume(const cv::Vec3i& dims) : data_(), trunc_dist_(0.03f), max_weight_(128), dims_(dims),
     size_(cv::Vec3f::all(3.f)), pose_(cv::Affine3f::Identity()), gradient_delta_factor_(0.75f), raycast_step_factor_(0.75f)
 { create(dims_); }
 
-kfusion::cuda::TsdfVolume::~TsdfVolume() {}
+kf::cuda::TsdfVolume::~TsdfVolume() {}
 
-void kfusion::cuda::TsdfVolume::create(const cv::Vec3i& dims)
+void kf::cuda::TsdfVolume::create(const cv::Vec3i& dims)
 {
     dims_ = dims;
     int voxels_number = dims_[0] * dims_[1] * dims_[2];
@@ -30,42 +30,42 @@ void kfusion::cuda::TsdfVolume::create(const cv::Vec3i& dims)
     clear();
 }
 
-cv::Vec3i kfusion::cuda::TsdfVolume::getDims() const
+cv::Vec3i kf::cuda::TsdfVolume::getDims() const
 { return dims_; }
 
-cv::Vec3f kfusion::cuda::TsdfVolume::getVoxelSize() const
+cv::Vec3f kf::cuda::TsdfVolume::getVoxelSize() const
 {
     return cv::Vec3f(size_[0]/dims_[0], size_[1]/dims_[1], size_[2]/dims_[2]);
 }
 
-const CudaData kfusion::cuda::TsdfVolume::data() const { return data_; }
-CudaData kfusion::cuda::TsdfVolume::data() {  return data_; }
-cv::Vec3f kfusion::cuda::TsdfVolume::getSize() const { return size_; }
+const cuda::Memory kf::cuda::TsdfVolume::data() const { return data_; }
+cuda::Memory kf::cuda::TsdfVolume::data() {  return data_; }
+cv::Vec3f kf::cuda::TsdfVolume::getSize() const { return size_; }
 
-void kfusion::cuda::TsdfVolume::setSize(const cv::Vec3f& size)
+void kf::cuda::TsdfVolume::setSize(const cv::Vec3f& size)
 { size_ = size; setTruncDist(trunc_dist_); }
 
-float kfusion::cuda::TsdfVolume::getTruncDist() const { return trunc_dist_; }
+float kf::cuda::TsdfVolume::getTruncDist() const { return trunc_dist_; }
 
-void kfusion::cuda::TsdfVolume::setTruncDist(float distance)
+void kf::cuda::TsdfVolume::setTruncDist(float distance)
 {
     cv::Vec3f vsz = getVoxelSize();
     float max_coeff = std::max<float>(std::max<float>(vsz[0], vsz[1]), vsz[2]);
     trunc_dist_ = std::max (distance, 2.1f * max_coeff);
 }
 
-int kfusion::cuda::TsdfVolume::getMaxWeight() const { return max_weight_; }
-void kfusion::cuda::TsdfVolume::setMaxWeight(int weight) { max_weight_ = weight; }
-cv::Affine3f kfusion::cuda::TsdfVolume::getPose() const  { return pose_; }
-void kfusion::cuda::TsdfVolume::setPose(const cv::Affine3f& pose) { pose_ = pose; }
-float kfusion::cuda::TsdfVolume::getRaycastStepFactor() const { return raycast_step_factor_; }
-void kfusion::cuda::TsdfVolume::setRaycastStepFactor(float factor) { raycast_step_factor_ = factor; }
-float kfusion::cuda::TsdfVolume::getGradientDeltaFactor() const { return gradient_delta_factor_; }
-void kfusion::cuda::TsdfVolume::setGradientDeltaFactor(float factor) { gradient_delta_factor_ = factor; }
-void kfusion::cuda::TsdfVolume::swap(CudaData& data) { data_.swap(data); }
-void kfusion::cuda::TsdfVolume::applyAffine(const cv::Affine3f& affine) { pose_ = affine * pose_; }
+int kf::cuda::TsdfVolume::getMaxWeight() const { return max_weight_; }
+void kf::cuda::TsdfVolume::setMaxWeight(int weight) { max_weight_ = weight; }
+cv::Affine3f kf::cuda::TsdfVolume::getPose() const  { return pose_; }
+void kf::cuda::TsdfVolume::setPose(const cv::Affine3f& pose) { pose_ = pose; }
+float kf::cuda::TsdfVolume::getRaycastStepFactor() const { return raycast_step_factor_; }
+void kf::cuda::TsdfVolume::setRaycastStepFactor(float factor) { raycast_step_factor_ = factor; }
+float kf::cuda::TsdfVolume::getGradientDeltaFactor() const { return gradient_delta_factor_; }
+void kf::cuda::TsdfVolume::setGradientDeltaFactor(float factor) { gradient_delta_factor_ = factor; }
+void kf::cuda::TsdfVolume::swap(cuda::Memory& data) { data_.swap(data); }
+void kf::cuda::TsdfVolume::applyAffine(const cv::Affine3f& affine) { pose_ = affine * pose_; }
 
-void kfusion::cuda::TsdfVolume::clear()
+void kf::cuda::TsdfVolume::clear()
 { 
     device::Vec3i dims = device_cast<device::Vec3i>(dims_);
     device::Vec3f vsz  = device_cast<device::Vec3f>(getVoxelSize());
@@ -74,7 +74,7 @@ void kfusion::cuda::TsdfVolume::clear()
     device::clear_volume(volume);
 }
 
-void kfusion::cuda::TsdfVolume::integrate(const Dists& dists, const cv::Affine3f& camera_pose, const Intr& intr)
+void kf::cuda::TsdfVolume::integrate(const Dists& dists, const cv::Affine3f& camera_pose, const Intr& intr)
 {
     cv::Affine3f vol2cam = camera_pose.inv() * pose_;
 
@@ -88,7 +88,7 @@ void kfusion::cuda::TsdfVolume::integrate(const Dists& dists, const cv::Affine3f
     device::integrate(dists, volume, aff, proj);
 }
 
-void kfusion::cuda::TsdfVolume::raycast(const cv::Affine3f& camera_pose, const Intr& intr, Depth& depth, Normals& normals)
+void kf::cuda::TsdfVolume::raycast(const cv::Affine3f& camera_pose, const Intr& intr, Depth& depth, Normals& normals)
 {
     Array2D<device::Normal>& n = (Array2D<device::Normal>&)normals;
 
@@ -107,7 +107,7 @@ void kfusion::cuda::TsdfVolume::raycast(const cv::Affine3f& camera_pose, const I
 
 }
 
-void kfusion::cuda::TsdfVolume::raycast(const cv::Affine3f& camera_pose, const Intr& intr, Points& points, Normals& normals)
+void kf::cuda::TsdfVolume::raycast(const cv::Affine3f& camera_pose, const Intr& intr, Points& points, Normals& normals)
 {
     device::Normals& n = (device::Normals&)normals;
     device::Points& p = (device::Points&)points;
@@ -126,7 +126,7 @@ void kfusion::cuda::TsdfVolume::raycast(const cv::Affine3f& camera_pose, const I
     device::raycast(volume, aff, Rinv, reproj, p, n, raycast_step_factor_, gradient_delta_factor_);
 }
 
-Array<Point> kfusion::cuda::TsdfVolume::fetchPoints(Array<Point>& Points_buffer) const
+Array<Point> kf::cuda::TsdfVolume::fetchPoints(Array<Point>& Points_buffer) const
 {
     enum { DEFAULT_Points_BUFFER_SIZE = 10 * 1000 * 1000 };
 
@@ -145,7 +145,7 @@ Array<Point> kfusion::cuda::TsdfVolume::fetchPoints(Array<Point>& Points_buffer)
     return Array<Point>((Point*)Points_buffer.ptr(), size);
 }
 
-void kfusion::cuda::TsdfVolume::fetchNormals(const Array<Point>& Points, Array<Normal>& normals) const
+void kf::cuda::TsdfVolume::fetchNormals(const Array<Point>& Points, Array<Normal>& normals) const
 {
     normals.create(Points.size());
     Array<device::Point>& c = (Array<device::Point>&)Points;

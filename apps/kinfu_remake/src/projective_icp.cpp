@@ -1,20 +1,20 @@
 #include "precomp.hpp"
 
 
-using namespace kfusion;
+using namespace kf;
 using namespace std;
-using namespace kfusion::cuda;
+using namespace kf::cuda;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// ComputeIcpHelper
 
-kfusion::device::ComputeIcpHelper::ComputeIcpHelper(float dist_thres, float angle_thres)
+kf::device::ComputeIcpHelper::ComputeIcpHelper(float dist_thres, float angle_thres)
 {
     min_cosine = cos(angle_thres);
     dist2_thres = dist_thres * dist_thres;
 }
 
-void kfusion::device::ComputeIcpHelper::setLevelIntr(int level_index, float fx, float fy, float cx, float cy)
+void kf::device::ComputeIcpHelper::setLevelIntr(int level_index, float fx, float fy, float cx, float cy)
 {
     int div = 1 << level_index;
     f = make_float2(fx/div, fy/div);
@@ -25,7 +25,7 @@ void kfusion::device::ComputeIcpHelper::setLevelIntr(int level_index, float fx, 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// ProjectiveICP::StreamHelper
 
-struct kfusion::cuda::ProjectiveICP::StreamHelper
+struct kf::cuda::ProjectiveICP::StreamHelper
 {
     typedef device::ComputeIcpHelper::PageLockHelper PageLockHelper;
     typedef cv::Matx66f Mat6f;
@@ -65,7 +65,7 @@ struct kfusion::cuda::ProjectiveICP::StreamHelper
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// ProjectiveICP
 
-kfusion::cuda::ProjectiveICP::ProjectiveICP() : angle_thres_(deg2rad(20.f)), dist_thres_(0.1f)
+kf::cuda::ProjectiveICP::ProjectiveICP() : angle_thres_(deg2rad(20.f)), dist_thres_(0.1f)
 { 
     const int iters[] = {10, 5, 4, 0};
     std::vector<int> vector_iters(iters, iters + 4);
@@ -75,21 +75,21 @@ kfusion::cuda::ProjectiveICP::ProjectiveICP() : angle_thres_(deg2rad(20.f)), dis
     shelp_ = cv::makePtr<StreamHelper>();
 }
 
-kfusion::cuda::ProjectiveICP::~ProjectiveICP() {}
+kf::cuda::ProjectiveICP::~ProjectiveICP() {}
 
-float kfusion::cuda::ProjectiveICP::getDistThreshold() const
+float kf::cuda::ProjectiveICP::getDistThreshold() const
 { return dist_thres_; }
 
-void kfusion::cuda::ProjectiveICP::setDistThreshold(float distance)
+void kf::cuda::ProjectiveICP::setDistThreshold(float distance)
 { dist_thres_ = distance; }
 
-float kfusion::cuda::ProjectiveICP::getAngleThreshold() const
+float kf::cuda::ProjectiveICP::getAngleThreshold() const
 { return angle_thres_; }
 
-void kfusion::cuda::ProjectiveICP::setAngleThreshold(float angle)
+void kf::cuda::ProjectiveICP::setAngleThreshold(float angle)
 { angle_thres_ = angle; }
 
-void kfusion::cuda::ProjectiveICP::setIterationsNum(const std::vector<int>& iters)
+void kf::cuda::ProjectiveICP::setIterationsNum(const std::vector<int>& iters)
 {
     if (iters.size() >= MAX_PYRAMID_LEVELS)
         iters_.assign(iters.begin(), iters.begin() + MAX_PYRAMID_LEVELS);
@@ -100,14 +100,14 @@ void kfusion::cuda::ProjectiveICP::setIterationsNum(const std::vector<int>& iter
     }
 }
 
-int kfusion::cuda::ProjectiveICP::getUsedLevelsNum() const
+int kf::cuda::ProjectiveICP::getUsedLevelsNum() const
 {
     int i = MAX_PYRAMID_LEVELS - 1;
     for(; i >= 0 && !iters_[i]; --i);
     return i + 1;
 }
 
-bool kfusion::cuda::ProjectiveICP::estimateTransform(cv::Affine3f& /*affine*/, const Intr& /*intr*/, const Frame& /*curr*/, const Frame& /*prev*/)
+bool kf::cuda::ProjectiveICP::estimateTransform(cv::Affine3f& /*affine*/, const Intr& /*intr*/, const Frame& /*curr*/, const Frame& /*prev*/)
 {
 //    bool has_depth = !curr.depth_pyr.empty() && !prev.depth_pyr.empty();
 //    bool has_points = !curr.points_pyr.empty() && !prev.points_pyr.empty();
@@ -123,7 +123,7 @@ bool kfusion::cuda::ProjectiveICP::estimateTransform(cv::Affine3f& /*affine*/, c
 }
 
 
-bool kfusion::cuda::ProjectiveICP::estimateTransform(cv::Affine3f& affine, const Intr& intr, 
+bool kf::cuda::ProjectiveICP::estimateTransform(cv::Affine3f& affine, const Intr& intr, 
     const std::vector<Depth>& dcurr, const std::vector<Normals>& ncurr,
     const std::vector<Depth>& dprev, const std::vector<Normals>& nprev)
 {
@@ -169,7 +169,7 @@ bool kfusion::cuda::ProjectiveICP::estimateTransform(cv::Affine3f& affine, const
     return true;
 }
 
-bool kfusion::cuda::ProjectiveICP::estimateTransform(cv::Affine3f& affine, const Intr& intr, 
+bool kf::cuda::ProjectiveICP::estimateTransform(cv::Affine3f& affine, const Intr& intr, 
     const std::vector<Points>& vcurr, const std::vector<Normals>& ncurr,
     const std::vector<Points>& vprev, const std::vector<Normals>& nprev)
 {

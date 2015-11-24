@@ -3,7 +3,7 @@
 #include <kfusion/exports.hpp>
 #include <kfusion/cuda/kernel_containers.hpp>
 
-namespace kfusion
+namespace kf
 {
     namespace cuda
     {
@@ -213,20 +213,14 @@ namespace kfusion
             int* refcount_;
         };
     }
-
-    namespace device
-    {
-        using kfusion::cuda::Memory;
-        using kfusion::cuda::Memory2D;
-    }
 }
 
 /////////////////////  Inline implementations of Memory ////////////////////////////////////////////
 
-template<class T> inline       T* kfusion::cuda::Memory::ptr()       { return (      T*)data_; }
-template<class T> inline const T* kfusion::cuda::Memory::ptr() const { return (const T*)data_; }
+template<class T> inline       T* kf::cuda::Memory::ptr()       { return (      T*)data_; }
+template<class T> inline const T* kf::cuda::Memory::ptr() const { return (const T*)data_; }
 
-template <class U> inline kfusion::cuda::Memory::operator kfusion::cuda::PtrSz<U>() const
+template <class U> inline kf::cuda::Memory::operator kf::cuda::PtrSz<U>() const
 {
     PtrSz<U> result;
     result.data = (U*)ptr<U>();
@@ -236,10 +230,10 @@ template <class U> inline kfusion::cuda::Memory::operator kfusion::cuda::PtrSz<U
 
 /////////////////////  Inline implementations of Memory2D ////////////////////////////////////////////
 
-template<class T>        T* kfusion::cuda::Memory2D::ptr(int y_arg)       { return (      T*)((      char*)data_ + y_arg * step_); }
-template<class T>  const T* kfusion::cuda::Memory2D::ptr(int y_arg) const { return (const T*)((const char*)data_ + y_arg * step_); }
+template<class T>        T* kf::cuda::Memory2D::ptr(int y_arg)       { return (      T*)((      char*)data_ + y_arg * step_); }
+template<class T>  const T* kf::cuda::Memory2D::ptr(int y_arg) const { return (const T*)((const char*)data_ + y_arg * step_); }
 
-template <class U> kfusion::cuda::Memory2D::operator kfusion::cuda::PtrStep<U>() const
+template <class U> kf::cuda::Memory2D::operator kf::cuda::PtrStep<U>() const
 {
     PtrStep<U> result;
     result.data = (U*)ptr<U>();
@@ -247,7 +241,7 @@ template <class U> kfusion::cuda::Memory2D::operator kfusion::cuda::PtrStep<U>()
     return result;
 }
 
-template <class U> kfusion::cuda::Memory2D::operator kfusion::cuda::PtrStepSz<U>() const
+template <class U> kf::cuda::Memory2D::operator kf::cuda::PtrStepSz<U>() const
 {
     PtrStepSz<U> result;
     result.data = (U*)ptr<U>();

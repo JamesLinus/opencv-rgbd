@@ -3,7 +3,7 @@
 #include "cuda.h"
 #include <kfusion/cuda/kernel_containers.hpp>
 
-namespace kfusion
+namespace kf
 {
     namespace device
     {

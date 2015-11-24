@@ -8,7 +8,7 @@
 
 struct CUevent_st;
 
-namespace kfusion
+namespace kf
 {
     struct KF_EXPORTS Intr
     {
@@ -55,7 +55,6 @@ namespace kfusion
 
     namespace cuda
     {
-        typedef cuda::Memory CudaData;
         typedef cuda::Array2D<ushort> Depth;
         typedef cuda::Array2D<ushort> Dists;
         typedef cuda::Array2D<RGB> Image;

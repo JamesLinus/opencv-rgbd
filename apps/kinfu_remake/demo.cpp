@@ -5,7 +5,7 @@
 #include <kfusion/kinfu.hpp>
 #include <time.h>
 
-using namespace kfusion;
+using namespace kf;
 
 struct KinFuApp
 {

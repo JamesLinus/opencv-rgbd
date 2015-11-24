@@ -2,7 +2,7 @@
 
 #include "cuda_runtime_api.h"
 
-namespace kfusion
+namespace kf
 {
     namespace cuda
     {
@@ -11,12 +11,12 @@ namespace kfusion
 }
 
 #if defined(__GNUC__)
-    #define cudaSafeCall(expr)  kfusion::cuda::___cudaSafeCall(expr, __FILE__, __LINE__, __func__)
+    #define cudaSafeCall(expr)  kf::cuda::___cudaSafeCall(expr, __FILE__, __LINE__, __func__)
 #else /* defined(__CUDACC__) || defined(__MSVC__) */
-    #define cudaSafeCall(expr)  kfusion::cuda::___cudaSafeCall(expr, __FILE__, __LINE__)    
+    #define cudaSafeCall(expr)  kf::cuda::___cudaSafeCall(expr, __FILE__, __LINE__)    
 #endif
 
-namespace kfusion
+namespace kf
 {
     namespace cuda
     {
@@ -31,6 +31,6 @@ namespace kfusion
 
     namespace device
     {
-        using kfusion::cuda::divUp;
+        using kf::cuda::divUp;
     }
 }

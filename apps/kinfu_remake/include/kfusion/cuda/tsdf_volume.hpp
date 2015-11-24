@@ -2,7 +2,7 @@
 
 #include <kfusion/types.hpp>
 
-namespace kfusion
+namespace kf
 {
     namespace cuda
     {
@@ -17,8 +17,8 @@ namespace kfusion
             cv::Vec3i getDims() const;
             cv::Vec3f getVoxelSize() const;
 
-            const CudaData data() const;
-            CudaData data();
+            const cuda::Memory data() const;
+            cuda::Memory data();
 
             cv::Vec3f getSize() const;
             void setSize(const cv::Vec3f& size);
@@ -47,7 +47,7 @@ namespace kfusion
             virtual void raycast(const cv::Affine3f& camera_pose, const Intr& intr, Depth& depth, Normals& normals);
             virtual void raycast(const cv::Affine3f& camera_pose, const Intr& intr, Points& points, Normals& normals);
 
-            void swap(CudaData& data);
+            void swap(cuda::Memory& data);
 
             Array<Point> fetchPoints(Array<Point>& cloud_buffer) const;
             void fetchNormals(const Array<Point>& cloud, Array<Normal>& normals) const;
@@ -63,7 +63,7 @@ namespace kfusion
                 static half float2half(float value);
             };
         private:
-            CudaData data_;
+            cuda::Memory data_;
 
             float trunc_dist_;
             int max_weight_;

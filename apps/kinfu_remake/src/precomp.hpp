@@ -10,7 +10,7 @@
 #include <iostream>
 #include "vector_functions.h"
 
-namespace kfusion
+namespace kf
 {
     template<typename D, typename S>
     inline D device_cast(const S& source)
