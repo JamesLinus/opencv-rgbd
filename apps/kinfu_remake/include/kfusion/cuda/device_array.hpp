@@ -10,14 +10,14 @@ namespace kfusion
     namespace cuda
     {
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /** \brief @b DeviceArray class
+        /** \brief @b Array class
           *
           * \note Typed container for GPU memory with reference counting.
           *
           * \author Anatoly Baksheev
           */
         template<class T>
-        class KF_EXPORTS DeviceArray : public DeviceMemory
+        class KF_EXPORTS Array : public Memory
         {
         public:
             /** \brief Element type. */
@@ -27,24 +27,24 @@ namespace kfusion
             enum { elem_size = sizeof(T) };
 
             /** \brief Empty constructor. */
-            DeviceArray();
+            Array();
 
             /** \brief Allocates internal buffer in GPU memory
               * \param size_t: number of elements to allocate
               * */
-            DeviceArray(size_t size);
+            Array(size_t size);
 
             /** \brief Initializes with user allocated buffer. Reference counting is disabled in this case.
               * \param ptr: pointer to buffer
               * \param size: elemens number
               * */
-            DeviceArray(T *ptr, size_t size);
+            Array(T *ptr, size_t size);
 
             /** \brief Copy constructor. Just increments reference counter. */
-            DeviceArray(const DeviceArray& other);
+            Array(const Array& other);
 
             /** \brief Assigment operator. Just increments reference counter. */
-            DeviceArray& operator = (const DeviceArray& other);
+            Array& operator = (const Array& other);
 
             /** \brief Allocates internal buffer in GPU memory. If internal buffer was created before the function recreates it with new size. If new and old sizes are equal it does nothing.
               * \param size: elemens number
@@ -57,7 +57,7 @@ namespace kfusion
             /** \brief Performs data copying. If destination size differs it will be reallocated.
               * \param other_arg: destination container
               * */
-            void copyTo(DeviceArray& other) const;
+            void copyTo(Array& other) const;
 
             /** \brief Uploads data to internal buffer in GPU memory. It calls create() inside to ensure that intenal buffer size is enough.
               * \param host_ptr_arg: pointer to buffer to upload
@@ -85,7 +85,7 @@ namespace kfusion
             /** \brief Performs swap of data pointed with another device array.
               * \param other: device array to swap with
               * */
-            void swap(DeviceArray& other_arg);
+            void swap(Array& other_arg);
 
             /** \brief Returns pointer for internal buffer in GPU memory. */
             T* ptr();
@@ -93,7 +93,7 @@ namespace kfusion
             /** \brief Returns const pointer for internal buffer in GPU memory. */
             const T* ptr() const;
 
-            //using DeviceMemory::ptr;
+            //using Memory::ptr;
 
             /** \brief Returns pointer for internal buffer in GPU memory. */
             operator T*();
@@ -107,14 +107,14 @@ namespace kfusion
 
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /** \brief @b DeviceArray2D class
+        /** \brief @b Array2D class
           *
           * \note Typed container for pitched GPU memory with reference counting.
           *
           * \author Anatoly Baksheev
           */
         template<class T>
-        class KF_EXPORTS DeviceArray2D : public DeviceMemory2D
+        class KF_EXPORTS Array2D : public Memory2D
         {
         public:
             /** \brief Element type. */
@@ -124,13 +124,13 @@ namespace kfusion
             enum { elem_size = sizeof(T) };
 
             /** \brief Empty constructor. */
-            DeviceArray2D();
+            Array2D();
 
             /** \brief Allocates internal buffer in GPU memory
               * \param rows: number of rows to allocate
               * \param cols: number of elements in each row
               * */
-            DeviceArray2D(int rows, int cols);
+            Array2D(int rows, int cols);
 
              /** \brief Initializes with user allocated buffer. Reference counting is disabled in this case.
               * \param rows: number of rows
@@ -138,13 +138,13 @@ namespace kfusion
               * \param data: pointer to buffer
               * \param stepBytes: stride between two consecutive rows in bytes
               * */
-            DeviceArray2D(int rows, int cols, void *data, size_t stepBytes);
+            Array2D(int rows, int cols, void *data, size_t stepBytes);
 
             /** \brief Copy constructor. Just increments reference counter. */
-            DeviceArray2D(const DeviceArray2D& other);
+            Array2D(const Array2D& other);
 
             /** \brief Assigment operator. Just increments reference counter. */
-            DeviceArray2D& operator = (const DeviceArray2D& other);
+            Array2D& operator = (const Array2D& other);
 
             /** \brief Allocates internal buffer in GPU memory. If internal buffer was created before the function recreates it with new size. If new and old sizes are equal it does nothing.
                * \param rows: number of rows to allocate
@@ -158,7 +158,7 @@ namespace kfusion
             /** \brief Performs data copying. If destination size differs it will be reallocated.
               * \param other: destination container
               * */
-            void copyTo(DeviceArray2D& other) const;
+            void copyTo(Array2D& other) const;
 
             /** \brief Uploads data to internal buffer in GPU memory. It calls create() inside to ensure that intenal buffer size is enough.
               * \param host_ptr: pointer to host buffer to upload
@@ -177,7 +177,7 @@ namespace kfusion
             /** \brief Performs swap of data pointed with another device array.
               * \param other: device array to swap with
               * */
-            void swap(DeviceArray2D& other_arg);
+            void swap(Array2D& other_arg);
 
             /** \brief Uploads data to internal buffer in GPU memory. It calls create() inside to ensure that intenal buffer size is enough.
               * \param data: host vector to upload from
@@ -203,7 +203,7 @@ namespace kfusion
               * */
             const T* ptr(int y = 0) const;
 
-            //using DeviceMemory2D::ptr;
+            //using Memory2D::ptr;
 
             /** \brief Returns pointer for internal buffer in GPU memory. */
             operator T*();
@@ -224,80 +224,80 @@ namespace kfusion
 
     namespace device
     {
-        using kfusion::cuda::DeviceArray;
-        using kfusion::cuda::DeviceArray2D;
+        using kfusion::cuda::Array;
+        using kfusion::cuda::Array2D;
     }
 }
 
-/////////////////////  Inline implementations of DeviceArray ////////////////////////////////////////////
+/////////////////////  Inline implementations of Array ////////////////////////////////////////////
 
-template<class T> inline kfusion::cuda::DeviceArray<T>::DeviceArray() {}
-template<class T> inline kfusion::cuda::DeviceArray<T>::DeviceArray(size_t size) : DeviceMemory(size * elem_size) {}
-template<class T> inline kfusion::cuda::DeviceArray<T>::DeviceArray(T *ptr, size_t size) : DeviceMemory(ptr, size * elem_size) {}
-template<class T> inline kfusion::cuda::DeviceArray<T>::DeviceArray(const DeviceArray& other) : DeviceMemory(other) {}
-template<class T> inline kfusion::cuda::DeviceArray<T>& kfusion::cuda::DeviceArray<T>::operator=(const DeviceArray& other)
-{ DeviceMemory::operator=(other); return *this; }
+template<class T> inline kfusion::cuda::Array<T>::Array() {}
+template<class T> inline kfusion::cuda::Array<T>::Array(size_t size) : Memory(size * elem_size) {}
+template<class T> inline kfusion::cuda::Array<T>::Array(T *ptr, size_t size) : Memory(ptr, size * elem_size) {}
+template<class T> inline kfusion::cuda::Array<T>::Array(const Array& other) : Memory(other) {}
+template<class T> inline kfusion::cuda::Array<T>& kfusion::cuda::Array<T>::operator=(const Array& other)
+{ Memory::operator=(other); return *this; }
 
-template<class T> inline void kfusion::cuda::DeviceArray<T>::create(size_t size)
-{ DeviceMemory::create(size * elem_size); }
-template<class T> inline void kfusion::cuda::DeviceArray<T>::release()
-{ DeviceMemory::release(); }
+template<class T> inline void kfusion::cuda::Array<T>::create(size_t size)
+{ Memory::create(size * elem_size); }
+template<class T> inline void kfusion::cuda::Array<T>::release()
+{ Memory::release(); }
 
-template<class T> inline void kfusion::cuda::DeviceArray<T>::copyTo(DeviceArray& other) const
-{ DeviceMemory::copyTo(other); }
-template<class T> inline void kfusion::cuda::DeviceArray<T>::upload(const T *host_ptr, size_t size)
-{ DeviceMemory::upload(host_ptr, size * elem_size); }
-template<class T> inline void kfusion::cuda::DeviceArray<T>::download(T *host_ptr) const
-{ DeviceMemory::download( host_ptr ); }
+template<class T> inline void kfusion::cuda::Array<T>::copyTo(Array& other) const
+{ Memory::copyTo(other); }
+template<class T> inline void kfusion::cuda::Array<T>::upload(const T *host_ptr, size_t size)
+{ Memory::upload(host_ptr, size * elem_size); }
+template<class T> inline void kfusion::cuda::Array<T>::download(T *host_ptr) const
+{ Memory::download( host_ptr ); }
 
-template<class T> void kfusion::cuda::DeviceArray<T>::swap(DeviceArray& other_arg) { DeviceMemory::swap(other_arg); }
+template<class T> void kfusion::cuda::Array<T>::swap(Array& other_arg) { Memory::swap(other_arg); }
 
-template<class T> inline kfusion::cuda::DeviceArray<T>::operator T*() { return ptr(); }
-template<class T> inline kfusion::cuda::DeviceArray<T>::operator const T*() const { return ptr(); }
-template<class T> inline size_t kfusion::cuda::DeviceArray<T>::size() const { return sizeBytes() / elem_size; }
+template<class T> inline kfusion::cuda::Array<T>::operator T*() { return ptr(); }
+template<class T> inline kfusion::cuda::Array<T>::operator const T*() const { return ptr(); }
+template<class T> inline size_t kfusion::cuda::Array<T>::size() const { return sizeBytes() / elem_size; }
 
-template<class T> inline       T* kfusion::cuda::DeviceArray<T>::ptr()       { return DeviceMemory::ptr<T>(); }
-template<class T> inline const T* kfusion::cuda::DeviceArray<T>::ptr() const { return DeviceMemory::ptr<T>(); }
+template<class T> inline       T* kfusion::cuda::Array<T>::ptr()       { return Memory::ptr<T>(); }
+template<class T> inline const T* kfusion::cuda::Array<T>::ptr() const { return Memory::ptr<T>(); }
 
-template<class T> template<class A> inline void kfusion::cuda::DeviceArray<T>::upload(const std::vector<T, A>& data) { upload(&data[0], data.size()); }
-template<class T> template<class A> inline void kfusion::cuda::DeviceArray<T>::download(std::vector<T, A>& data) const { data.resize(size()); if (!data.empty()) download(&data[0]); }
+template<class T> template<class A> inline void kfusion::cuda::Array<T>::upload(const std::vector<T, A>& data) { upload(&data[0], data.size()); }
+template<class T> template<class A> inline void kfusion::cuda::Array<T>::download(std::vector<T, A>& data) const { data.resize(size()); if (!data.empty()) download(&data[0]); }
 
-/////////////////////  Inline implementations of DeviceArray2D ////////////////////////////////////////////
+/////////////////////  Inline implementations of Array2D ////////////////////////////////////////////
 
-template<class T> inline kfusion::cuda::DeviceArray2D<T>::DeviceArray2D() {}
-template<class T> inline kfusion::cuda::DeviceArray2D<T>::DeviceArray2D(int rows, int cols) : DeviceMemory2D(rows, cols * elem_size) {}
-template<class T> inline kfusion::cuda::DeviceArray2D<T>::DeviceArray2D(int rows, int cols, void *data, size_t stepBytes) : DeviceMemory2D(rows, cols * elem_size, data, stepBytes) {}
-template<class T> inline kfusion::cuda::DeviceArray2D<T>::DeviceArray2D(const DeviceArray2D& other) : DeviceMemory2D(other) {}
-template<class T> inline kfusion::cuda::DeviceArray2D<T>& kfusion::cuda::DeviceArray2D<T>::operator=(const DeviceArray2D& other)
-{ DeviceMemory2D::operator=(other); return *this; }
+template<class T> inline kfusion::cuda::Array2D<T>::Array2D() {}
+template<class T> inline kfusion::cuda::Array2D<T>::Array2D(int rows, int cols) : Memory2D(rows, cols * elem_size) {}
+template<class T> inline kfusion::cuda::Array2D<T>::Array2D(int rows, int cols, void *data, size_t stepBytes) : Memory2D(rows, cols * elem_size, data, stepBytes) {}
+template<class T> inline kfusion::cuda::Array2D<T>::Array2D(const Array2D& other) : Memory2D(other) {}
+template<class T> inline kfusion::cuda::Array2D<T>& kfusion::cuda::Array2D<T>::operator=(const Array2D& other)
+{ Memory2D::operator=(other); return *this; }
 
-template<class T> inline void kfusion::cuda::DeviceArray2D<T>::create(int rows, int cols)
-{ DeviceMemory2D::create(rows, cols * elem_size); }
-template<class T> inline void kfusion::cuda::DeviceArray2D<T>::release()
-{ DeviceMemory2D::release(); }
+template<class T> inline void kfusion::cuda::Array2D<T>::create(int rows, int cols)
+{ Memory2D::create(rows, cols * elem_size); }
+template<class T> inline void kfusion::cuda::Array2D<T>::release()
+{ Memory2D::release(); }
 
-template<class T> inline void kfusion::cuda::DeviceArray2D<T>::copyTo(DeviceArray2D& other) const
-{ DeviceMemory2D::copyTo(other); }
-template<class T> inline void kfusion::cuda::DeviceArray2D<T>::upload(const void *host_ptr, size_t host_step, int rows, int cols)
-{ DeviceMemory2D::upload(host_ptr, host_step, rows, cols * elem_size); }
-template<class T> inline void kfusion::cuda::DeviceArray2D<T>::download(void *host_ptr, size_t host_step) const
-{ DeviceMemory2D::download( host_ptr, host_step ); }
+template<class T> inline void kfusion::cuda::Array2D<T>::copyTo(Array2D& other) const
+{ Memory2D::copyTo(other); }
+template<class T> inline void kfusion::cuda::Array2D<T>::upload(const void *host_ptr, size_t host_step, int rows, int cols)
+{ Memory2D::upload(host_ptr, host_step, rows, cols * elem_size); }
+template<class T> inline void kfusion::cuda::Array2D<T>::download(void *host_ptr, size_t host_step) const
+{ Memory2D::download( host_ptr, host_step ); }
 
-template<class T> template<class A> inline void kfusion::cuda::DeviceArray2D<T>::upload(const std::vector<T, A>& data, int cols)
+template<class T> template<class A> inline void kfusion::cuda::Array2D<T>::upload(const std::vector<T, A>& data, int cols)
 { upload(&data[0], cols * elem_size, data.size()/cols, cols); }
 
-template<class T> template<class A> inline void kfusion::cuda::DeviceArray2D<T>::download(std::vector<T, A>& data, int& elem_step) const
+template<class T> template<class A> inline void kfusion::cuda::Array2D<T>::download(std::vector<T, A>& data, int& elem_step) const
 { elem_step = cols(); data.resize(cols() * rows()); if (!data.empty()) download(&data[0], colsBytes());  }
 
-template<class T> void  kfusion::cuda::DeviceArray2D<T>::swap(DeviceArray2D& other_arg) { DeviceMemory2D::swap(other_arg); }
+template<class T> void  kfusion::cuda::Array2D<T>::swap(Array2D& other_arg) { Memory2D::swap(other_arg); }
 
-template<class T> inline       T* kfusion::cuda::DeviceArray2D<T>::ptr(int y)       { return DeviceMemory2D::ptr<T>(y); }
-template<class T> inline const T* kfusion::cuda::DeviceArray2D<T>::ptr(int y) const { return DeviceMemory2D::ptr<T>(y); }
+template<class T> inline       T* kfusion::cuda::Array2D<T>::ptr(int y)       { return Memory2D::ptr<T>(y); }
+template<class T> inline const T* kfusion::cuda::Array2D<T>::ptr(int y) const { return Memory2D::ptr<T>(y); }
 
-template<class T> inline kfusion::cuda::DeviceArray2D<T>::operator T*() { return ptr(); }
-template<class T> inline kfusion::cuda::DeviceArray2D<T>::operator const T*() const { return ptr(); }
+template<class T> inline kfusion::cuda::Array2D<T>::operator T*() { return ptr(); }
+template<class T> inline kfusion::cuda::Array2D<T>::operator const T*() const { return ptr(); }
 
-template<class T> inline int kfusion::cuda::DeviceArray2D<T>::cols() const { return DeviceMemory2D::colsBytes()/elem_size; }
-template<class T> inline int kfusion::cuda::DeviceArray2D<T>::rows() const { return DeviceMemory2D::rows(); }
+template<class T> inline int kfusion::cuda::Array2D<T>::cols() const { return Memory2D::colsBytes()/elem_size; }
+template<class T> inline int kfusion::cuda::Array2D<T>::rows() const { return Memory2D::rows(); }
 
-template<class T> inline size_t kfusion::cuda::DeviceArray2D<T>::elem_step() const { return DeviceMemory2D::step()/elem_size; }
+template<class T> inline size_t kfusion::cuda::Array2D<T>::elem_step() const { return Memory2D::step()/elem_size; }

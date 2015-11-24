@@ -61,7 +61,7 @@ struct KinFuApp
 
     void take_cloud(KinFu& kinfu)
     {
-        cuda::DeviceArray<Point> cloud = kinfu.tsdf().fetchCloud(cloud_buffer);
+        cuda::Array<Point> cloud = kinfu.tsdf().fetchPoints(cloud_buffer);
         cv::Mat cloud_host(1, (int)cloud.size(), CV_32FC4);
         cloud.download(cloud_host.ptr<Point>());
 
@@ -139,8 +139,8 @@ struct KinFuApp
     cv::Mat view_host_;
     cuda::Image view_device_;
     cuda::Depth depth_device_;
-    cuda::DeviceArray2D<PixelRGB> color_device_;
-    cuda::DeviceArray<Point> cloud_buffer;
+    cuda::Array2D<PixelRGB> color_device_;
+    cuda::Array<Point> cloud_buffer;
 };
 
 

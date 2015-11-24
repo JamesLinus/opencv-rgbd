@@ -735,7 +735,7 @@ namespace kfusion
     }
 }
 
-size_t kfusion::device::extractCloud (const TsdfVolume& volume, const Aff3f& aff, PtrSz<Point> output)
+size_t kfusion::device::extractPoints (const TsdfVolume& volume, const Aff3f& aff, PtrSz<Point> output)
 {
     typedef FullScan6 FS;
     FS fs(volume);

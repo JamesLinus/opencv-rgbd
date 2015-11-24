@@ -395,7 +395,7 @@ namespace kfusion
     }
 }
 
-void kfusion::device::ComputeIcpHelper::operator()(const Depth& dprev, const Normals& nprev, DeviceArray2D<float>& buffer, float* data, cudaStream_t s)
+void kfusion::device::ComputeIcpHelper::operator()(const Depth& dprev, const Normals& nprev, Array2D<float>& buffer, float* data, cudaStream_t s)
 {
     dprev_tex.filterMode = cudaFilterModePoint;
     nprev_tex.filterMode = cudaFilterModePoint;
@@ -420,7 +420,7 @@ void kfusion::device::ComputeIcpHelper::operator()(const Depth& dprev, const Nor
     cudaSafeCall ( cudaGetLastError () );
 }
 
-void kfusion::device::ComputeIcpHelper::operator()(const Points& vprev, const Normals& nprev, DeviceArray2D<float>& buffer, float* data, cudaStream_t s)
+void kfusion::device::ComputeIcpHelper::operator()(const Points& vprev, const Normals& nprev, Array2D<float>& buffer, float* data, cudaStream_t s)
 {
     dprev_tex.filterMode = cudaFilterModePoint;
     nprev_tex.filterMode = cudaFilterModePoint;
@@ -446,7 +446,7 @@ void kfusion::device::ComputeIcpHelper::operator()(const Points& vprev, const No
 }
 
 
-void kfusion::device::ComputeIcpHelper::allocate_buffer(DeviceArray2D<float>& buffer, int partials_count)
+void kfusion::device::ComputeIcpHelper::allocate_buffer(Array2D<float>& buffer, int partials_count)
 { 
     if (partials_count < 0)
     {

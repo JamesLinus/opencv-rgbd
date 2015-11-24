@@ -14,20 +14,20 @@ namespace kfusion
 
         KF_EXPORTS void computeNormalsAndMaskDepth(const Intr& intr, Depth& depth, Normals& normals);
 
-        KF_EXPORTS void computePointNormals(const Intr& intr, const Depth& depth, Cloud& points, Normals& normals);
+        KF_EXPORTS void computePointNormals(const Intr& intr, const Depth& depth, Points& points, Normals& normals);
 
         KF_EXPORTS void computeDists(const Depth& depth, Dists& dists, const Intr& intr);
 
         KF_EXPORTS void resizeDepthNormals(const Depth& depth, const Normals& normals, Depth& depth_out, Normals& normals_out);
 
-        KF_EXPORTS void resizePointsNormals(const Cloud& points, const Normals& normals, Cloud& points_out, Normals& normals_out);
+        KF_EXPORTS void resizePointsNormals(const Points& points, const Normals& normals, Points& points_out, Normals& normals_out);
 
         KF_EXPORTS void waitAllDefaultStream();
 
         KF_EXPORTS void renderTangentColors(const Normals& normals, Image& image);
 
-        KF_EXPORTS void renderImage(const Depth& depth, const Normals& normals, const Intr& intr, const Vec3f& light_pose, Image& image);
+        KF_EXPORTS void renderImage(const Depth& depth, const Normals& normals, const Intr& intr, const cv::Vec3f& light_pose, Image& image);
 
-        KF_EXPORTS void renderImage(const Cloud& points, const Normals& normals, const Intr& intr, const Vec3f& light_pose, Image& image);
+        KF_EXPORTS void renderImage(const Points& points, const Normals& normals, const Intr& intr, const cv::Vec3f& light_pose, Image& image);
     }
 }

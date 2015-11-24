@@ -11,14 +11,14 @@ namespace kfusion
         {
         public:
             template<class T, enum cudaTextureReadMode readMode>
-            TextureBinder(const DeviceArray2D<T>& arr, const struct texture<T, 2, readMode>& tex) : texref(&tex)
+            TextureBinder(const Array2D<T>& arr, const struct texture<T, 2, readMode>& tex) : texref(&tex)
             {
                 cudaChannelFormatDesc desc = cudaCreateChannelDesc<T>();
                 cudaSafeCall( cudaBindTexture2D(0, tex, arr.ptr(), desc, arr.cols(), arr.rows(), arr.step()) );
             }
 
             template<class T, enum cudaTextureReadMode readMode>
-            TextureBinder(const DeviceArray<T>& arr, const struct texture<T, 1, readMode> &tex) : texref(&tex)
+            TextureBinder(const Array<T>& arr, const struct texture<T, 1, readMode> &tex) : texref(&tex)
             {
                 cudaChannelFormatDesc desc = cudaCreateChannelDesc<T>();
                 cudaSafeCall( cudaBindTexture(0, tex, arr.ptr(), desc, arr.sizeBytes()) );

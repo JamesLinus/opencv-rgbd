@@ -13,7 +13,7 @@
 // Function prototypes
 void subtractPlane(const cv::Mat& depth, cv::Mat& mask, std::vector<CvPoint>& chain, double f);
 
-std::vector<CvPoint> maskFromTemplate(const std::vector<cv::linemod::Template>& templates,
+std::vector<CvPoint> maskfusionromTemplate(const std::vector<cv::linemod::Template>& templates,
     int num_modalities, cv::Point offset, cv::Size size,
     cv::Mat& mask, cv::Mat& dst);
 
@@ -295,7 +295,7 @@ int main(int argc, char * argv[])
 
                     // Compute masks based on convex hull of matched template
                     cv::Mat color_mask, depth_mask;
-                    std::vector<CvPoint> chain = maskFromTemplate(templates, num_modalities,
+                    std::vector<CvPoint> chain = maskfusionromTemplate(templates, num_modalities,
                         cv::Point(m.x, m.y), color.size(),
                         color_mask, display);
                     subtractPlane(depth, depth_mask, chain, focal_length);
@@ -578,7 +578,7 @@ void subtractPlane(const cv::Mat& depth, cv::Mat& mask, std::vector<CvPoint>& ch
     filterPlane(&depth_ipl, tmp, chain, f);
 }
 
-std::vector<CvPoint> maskFromTemplate(const std::vector<cv::linemod::Template>& templates,
+std::vector<CvPoint> maskfusionromTemplate(const std::vector<cv::linemod::Template>& templates,
     int num_modalities, cv::Point offset, cv::Size size,
     cv::Mat& mask, cv::Mat& dst)
 {

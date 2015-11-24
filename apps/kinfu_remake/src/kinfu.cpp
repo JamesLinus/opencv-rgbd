@@ -18,9 +18,9 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
     p.rows = 480;  //pixels
     p.intr = Intr(525.f, 525.f, p.cols/2 - 0.5f, p.rows/2 - 0.5f);
 
-    p.volume_dims = Vec3i::all(512);  //number of voxels
-    p.volume_size = Vec3f::all(3.f);  //meters
-    p.volume_pose = Affine3f().translate(Vec3f(-p.volume_size[0]/2, -p.volume_size[1]/2, 0.5f));
+    p.volume_dims = cv::Vec3i::all(512);  //number of voxels
+    p.volume_size = cv::Vec3f::all(3.f);  //meters
+    p.volume_pose = cv::Affine3f().translate(cv::Vec3f(-p.volume_size[0]/2, -p.volume_size[1]/2, 0.5f));
 
     p.bilateral_sigma_depth = 0.04f;  //meter
     p.bilateral_sigma_spatial = 4.5; //pixels
@@ -39,7 +39,7 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
     p.gradient_delta_factor = 0.5f; //in voxel sizes
 
     //p.light_pose = p.volume_pose.translation()/4; //meters
-    p.light_pose = Vec3f::all(0.f); //meters
+    p.light_pose = cv::Vec3f::all(0.f); //meters
 
     return p;
 }
@@ -129,18 +129,18 @@ void kfusion::KinFu::reset()
     frame_counter_ = 0;
     poses_.clear();
     poses_.reserve(30000);
-    poses_.push_back(Affine3f::Identity());
+    poses_.push_back(cv::Affine3f::Identity());
     volume_->clear();
 }
 
-kfusion::Affine3f kfusion::KinFu::getCameraPose (int time) const
+cv::Affine3f kfusion::KinFu::getCameraPose (int time) const
 {
     if (time > (int)poses_.size () || time < 0)
         time = (int)poses_.size () - 1;
     return poses_[time];
 }
 
-bool kfusion::KinFu::operator()(const kfusion::cuda::Depth& depth, const kfusion::cuda::DeviceArray2D<PixelRGB>& color)
+bool kfusion::KinFu::operator()(const kfusion::cuda::Depth& depth, const kfusion::cuda::Array2D<PixelRGB>& color)
 {
     const KinFuParams& p = params_;
     const int LEVELS = icp_->getUsedLevelsNum();
@@ -178,7 +178,7 @@ bool kfusion::KinFu::operator()(const kfusion::cuda::Depth& depth, const kfusion
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // ICP
-    Affine3f affine; // cuur -> prev
+    cv::Affine3f affine; // cuur -> prev
     {
         //ScopeTime time("icp");
 #if defined USE_DEPTH
@@ -241,8 +241,8 @@ void kfusion::KinFu::renderImage(cuda::Image& image, int flag)
         cuda::renderTangentColors(prev_.normals_pyr[0], image);
     else /* if (flag == 3) */
     {
-        DeviceArray2D<RGB> i1(p.rows, p.cols, image.ptr(), image.step());
-        DeviceArray2D<RGB> i2(p.rows, p.cols, image.ptr() + p.cols, image.step());
+        Array2D<RGB> i1(p.rows, p.cols, image.ptr(), image.step());
+        Array2D<RGB> i2(p.rows, p.cols, image.ptr() + p.cols, image.step());
 
         cuda::renderImage(PASS1[0], prev_.normals_pyr[0], params_.intr, params_.light_pose, i1);
         cuda::renderTangentColors(prev_.normals_pyr[0], i2);
@@ -251,7 +251,7 @@ void kfusion::KinFu::renderImage(cuda::Image& image, int flag)
 }
 
 
-void kfusion::KinFu::renderImage(cuda::Image& image, const Affine3f& pose, int flag)
+void kfusion::KinFu::renderImage(cuda::Image& image, const cv::Affine3f& pose, int flag)
 {
     const KinFuParams& p = params_;
     image.create(p.rows, flag != 3 ? p.cols : p.cols * 2);
@@ -273,8 +273,8 @@ void kfusion::KinFu::renderImage(cuda::Image& image, const Affine3f& pose, int f
         cuda::renderTangentColors(normals_, image);
     else /* if (flag == 3) */
     {
-        DeviceArray2D<RGB> i1(p.rows, p.cols, image.ptr(), image.step());
-        DeviceArray2D<RGB> i2(p.rows, p.cols, image.ptr() + p.cols, image.step());
+        Array2D<RGB> i1(p.rows, p.cols, image.ptr(), image.step());
+        Array2D<RGB> i2(p.rows, p.cols, image.ptr() + p.cols, image.step());
 
         cuda::renderImage(PASS1, normals_, params_.intr, params_.light_pose, i1);
         cuda::renderTangentColors(normals_, i2);

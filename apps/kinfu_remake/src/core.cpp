@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <iostream>
 
-int kf::cuda::getCudaEnabledDeviceCount()
+int kfusion::cuda::getCudaEnabledDeviceCount()
 {
     int count;
     cudaError_t error = cudaGetDeviceCount( &count );
@@ -20,12 +20,12 @@ int kf::cuda::getCudaEnabledDeviceCount()
     return count;  
 }
 
-void kf::cuda::setDevice(int device)
+void kfusion::cuda::setDevice(int device)
 {
     cudaSafeCall( cudaSetDevice( device ) );
 }
 
-std::string kf::cuda::getDeviceName(int device)
+std::string kfusion::cuda::getDeviceName(int device)
 {
     cudaDeviceProp prop;
     cudaSafeCall( cudaGetDeviceProperties(&prop, device) );
@@ -33,7 +33,7 @@ std::string kf::cuda::getDeviceName(int device)
     return prop.name;
 }
 
-bool kf::cuda::checkIfPreFermiGPU(int device)
+bool kfusion::cuda::checkIfPreFermiGPU(int device)
 {
   if (device < 0)
     cudaSafeCall( cudaGetDevice(&device) );
@@ -78,7 +78,7 @@ namespace
     }
 }
 
-void kf::cuda::printCudaDeviceInfo(int device)
+void kfusion::cuda::printCudaDeviceInfo(int device)
 {
     int count = getCudaEnabledDeviceCount();
     bool valid = (device >= 0) && (device < count);
@@ -174,7 +174,7 @@ void kf::cuda::printCudaDeviceInfo(int device)
     fflush(stdout);
 }
 
-void kf::cuda::printShortCudaDeviceInfo(int device)
+void kfusion::cuda::printShortCudaDeviceInfo(int device)
 {
     int count = getCudaEnabledDeviceCount();
     bool valid = (device >= 0) && (device < count);
@@ -199,11 +199,11 @@ void kf::cuda::printShortCudaDeviceInfo(int device)
     fflush(stdout);
 }
 
-kf::SampledScopeTime::SampledScopeTime(double& time_ms) : time_ms_(time_ms)
+kfusion::SampledScopeTime::SampledScopeTime(double& time_ms) : time_ms_(time_ms)
 {
     start = (double)cv::getTickCount();
 }
-kf::SampledScopeTime::~SampledScopeTime()
+kfusion::SampledScopeTime::~SampledScopeTime()
 {
     static int i_ = 0;
     time_ms_ += getTime ();
@@ -215,16 +215,17 @@ kf::SampledScopeTime::~SampledScopeTime()
     ++i_;
 }
 
-double kf::SampledScopeTime::getTime()
+double kfusion::SampledScopeTime::getTime()
 {
     return ((double)cv::getTickCount() - start)*1000.0/cv::getTickFrequency();
 }
 
-kf::ScopeTime::ScopeTime(const char *name_) : name(name_)
+kfusion::ScopeTime::ScopeTime(const char *name_) : name(name_)
 {
     start = (double)cv::getTickCount();
 }
-kf::ScopeTime::~ScopeTime()
+
+kfusion::ScopeTime::~ScopeTime()
 {
     double time_ms =  ((double)cv::getTickCount() - start)*1000.0/cv::getTickFrequency();
     std::cout << "Time(" << name << ") = " << time_ms << "ms" << std::endl;

@@ -12,16 +12,16 @@ namespace kfusion
             TsdfVolume(const cv::Vec3i& dims);
             virtual ~TsdfVolume();
 
-            void create(const Vec3i& dims);
+            void create(const cv::Vec3i& dims);
 
-            Vec3i getDims() const;
-            Vec3f getVoxelSize() const;
+            cv::Vec3i getDims() const;
+            cv::Vec3f getVoxelSize() const;
 
             const CudaData data() const;
             CudaData data();
 
-            Vec3f getSize() const;
-            void setSize(const Vec3f& size);
+            cv::Vec3f getSize() const;
+            void setSize(const cv::Vec3f& size);
 
             float getTruncDist() const;
             void setTruncDist(float distance);
@@ -29,8 +29,8 @@ namespace kfusion
             int getMaxWeight() const;
             void setMaxWeight(int weight);
 
-            Affine3f getPose() const;
-            void setPose(const Affine3f& pose);
+            cv::Affine3f getPose() const;
+            void setPose(const cv::Affine3f& pose);
 
             float getRaycastStepFactor() const;
             void setRaycastStepFactor(float factor);
@@ -38,19 +38,19 @@ namespace kfusion
             float getGradientDeltaFactor() const;
             void setGradientDeltaFactor(float factor);
 
-            Vec3i getGridOrigin() const;
-            void setGridOrigin(const Vec3i& origin);
+            cv::Vec3i getGridOrigin() const;
+            void setGridOrigin(const cv::Vec3i& origin);
 
             virtual void clear();
-            virtual void applyAffine(const Affine3f& affine);
-            virtual void integrate(const Dists& dists, const Affine3f& camera_pose, const Intr& intr);
-            virtual void raycast(const Affine3f& camera_pose, const Intr& intr, Depth& depth, Normals& normals);
-            virtual void raycast(const Affine3f& camera_pose, const Intr& intr, Cloud& points, Normals& normals);
+            virtual void applyAffine(const cv::Affine3f& affine);
+            virtual void integrate(const Dists& dists, const cv::Affine3f& camera_pose, const Intr& intr);
+            virtual void raycast(const cv::Affine3f& camera_pose, const Intr& intr, Depth& depth, Normals& normals);
+            virtual void raycast(const cv::Affine3f& camera_pose, const Intr& intr, Points& points, Normals& normals);
 
             void swap(CudaData& data);
 
-            DeviceArray<Point> fetchCloud(DeviceArray<Point>& cloud_buffer) const;
-            void fetchNormals(const DeviceArray<Point>& cloud, DeviceArray<Normal>& normals) const;
+            Array<Point> fetchPoints(Array<Point>& cloud_buffer) const;
+            void fetchNormals(const Array<Point>& cloud, Array<Normal>& normals) const;
 
             struct Entry
             {
@@ -67,9 +67,9 @@ namespace kfusion
 
             float trunc_dist_;
             int max_weight_;
-            Vec3i dims_;
-            Vec3f size_;
-            Affine3f pose_;
+            cv::Vec3i dims_;
+            cv::Vec3f size_;
+            cv::Affine3f pose_;
 
             float gradient_delta_factor_;
             float raycast_step_factor_;

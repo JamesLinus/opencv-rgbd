@@ -401,11 +401,11 @@ void preparePyramidNormalsMask(const std::vector<Mat>& pyramidNormals, const std
             Mat& normalsMask = pyramidNormalsMask[i];
             for(int y = 0; y < normalsMask.rows; y++)
             {
-                const Vec3f *normals_row = pyramidNormals[i].ptr<Vec3f>(y);
+                const cv::Vec3f *normals_row = pyramidNormals[i].ptr<cv::Vec3f>(y);
                 uchar *normalsMask_row = pyramidNormalsMask[i].ptr<uchar>(y);
                 for(int x = 0; x < normalsMask.cols; x++)
                 {
-                    Vec3f n = normals_row[x];
+                    cv::Vec3f n = normals_row[x];
                     if(cvIsNaN(n[0]))
                     {
                         CV_DbgAssert(cvIsNaN(n[1]) && cvIsNaN(n[2]));
@@ -602,7 +602,7 @@ typedef
 void (*CalcRgbdEquationCoeffsPtr)(double*, double, double, const Point3f&, double, double);
 
 static inline
-void calcICPEquationCoeffs(double* C, const Point3f& p0, const Vec3f& n1)
+void calcICPEquationCoeffs(double* C, const Point3f& p0, const cv::Vec3f& n1)
 {
     C[0] = -p0.z * n1[1] + p0.y * n1[2];
     C[1] =  p0.z * n1[0] - p0.x * n1[2];
@@ -613,7 +613,7 @@ void calcICPEquationCoeffs(double* C, const Point3f& p0, const Vec3f& n1)
 }
 
 static inline
-void calcICPEquationCoeffsRotation(double* C, const Point3f& p0, const Vec3f& n1)
+void calcICPEquationCoeffsRotation(double* C, const Point3f& p0, const cv::Vec3f& n1)
 {
     C[0] = -p0.z * n1[1] + p0.y * n1[2];
     C[1] =  p0.z * n1[0] - p0.x * n1[2];
@@ -621,7 +621,7 @@ void calcICPEquationCoeffsRotation(double* C, const Point3f& p0, const Vec3f& n1
 }
 
 static inline
-void calcICPEquationCoeffsTranslation(double* C, const Point3f& /*p0*/, const Vec3f& n1)
+void calcICPEquationCoeffsTranslation(double* C, const Point3f& /*p0*/, const cv::Vec3f& n1)
 {
     C[0] = n1[0];
     C[1] = n1[1];
@@ -629,7 +629,7 @@ void calcICPEquationCoeffsTranslation(double* C, const Point3f& /*p0*/, const Ve
 }
 
 typedef
-void (*CalcICPEquationCoeffsPtr)(double*, const Point3f&, const Vec3f&);
+void (*CalcICPEquationCoeffsPtr)(double*, const Point3f&, const cv::Vec3f&);
 
 static 
 void calcRgbdLsmMatrices(const Mat& image0, const Mat& cloud0, const Mat& Rt,
@@ -740,7 +740,7 @@ void calcICPLsmMatrices(const Mat& cloud0, const Mat& Rt,
         tp0.y = (float)(p0.x * Rt_ptr[4] + p0.y * Rt_ptr[5] + p0.z * Rt_ptr[6] + Rt_ptr[7]);
         tp0.z = (float)(p0.x * Rt_ptr[8] + p0.y * Rt_ptr[9] + p0.z * Rt_ptr[10] + Rt_ptr[11]);
 
-        Vec3f n1 = normals1.at<Vec3f>(v1, u1);
+        cv::Vec3f n1 = normals1.at<cv::Vec3f>(v1, u1);
         Point3f v = cloud1.at<Point3f>(v1,u1) - tp0;
 
         tps0_ptr[correspIndex] = tp0;
@@ -760,7 +760,7 @@ void calcICPLsmMatrices(const Mat& cloud0, const Mat& Rt,
         double w = sigma + std::abs(diffs_ptr[correspIndex]);
         w = w > DBL_EPSILON ? 1./w : 1.;
 
-        func(A_ptr, tps0_ptr[correspIndex], normals1.at<Vec3f>(v1, u1) * w);
+        func(A_ptr, tps0_ptr[correspIndex], normals1.at<cv::Vec3f>(v1, u1) * w);
 
         for(int y = 0; y < transformDim; y++)
         {

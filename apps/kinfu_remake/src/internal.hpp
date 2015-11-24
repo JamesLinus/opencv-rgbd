@@ -16,10 +16,10 @@ namespace kfusion
         typedef unsigned char uchar;
 
         typedef PtrStepSz<ushort> Dists;
-        typedef DeviceArray2D<ushort> Depth;
-        typedef DeviceArray2D<Normal> Normals;
-        typedef DeviceArray2D<Point> Points;
-        typedef DeviceArray2D<uchar4> Image;
+        typedef Array2D<ushort> Depth;
+        typedef Array2D<Normal> Normals;
+        typedef Array2D<Point> Points;
+        typedef Array2D<uchar4> Image;
 
         typedef int3   Vec3i;
         typedef float3 Vec3f;
@@ -89,10 +89,10 @@ namespace kfusion
             ComputeIcpHelper(float dist_thres, float angle_thres);
             void setLevelIntr(int level_index, float fx, float fy, float cx, float cy);
 
-            void operator()(const Depth& dprev, const Normals& nprev, DeviceArray2D<float>& buffer, float* data, cudaStream_t stream);
-            void operator()(const Points& vprev, const Normals& nprev, DeviceArray2D<float>& buffer, float* data, cudaStream_t stream);
+            void operator()(const Depth& dprev, const Normals& nprev, Array2D<float>& buffer, float* data, cudaStream_t stream);
+            void operator()(const Points& vprev, const Normals& nprev, Array2D<float>& buffer, float* data, cudaStream_t stream);
 
-            static void allocate_buffer(DeviceArray2D<float>& buffer, int partials_count = -1);
+            static void allocate_buffer(Array2D<float>& buffer, int partials_count = -1);
 
             //private:
             __kf_device__ int find_coresp(int x, int y, float3& n, float3& d, float3& s) const;
@@ -135,11 +135,11 @@ namespace kfusion
 
 
         //exctraction functionality
-        size_t extractCloud(const TsdfVolume& volume, const Aff3f& aff, PtrSz<Point> output);
+        size_t extractPoints(const TsdfVolume& volume, const Aff3f& aff, PtrSz<Point> output);
         void extractNormals(const TsdfVolume& volume, const PtrSz<Point>& points, const Aff3f& aff, const Mat3f& Rinv, float gradient_delta_factor, float4* output);
 
         struct float8  { float x, y, z, w, c1, c2, c3, c4; };
         struct float12 { float x, y, z, w, normal_x, normal_y, normal_z, n4, c1, c2, c3, c4; };
-        void mergePointNormal(const DeviceArray<Point>& cloud, const DeviceArray<float8>& normals, const DeviceArray<float12>& output);
+        void mergePointNormal(const Array<Point>& cloud, const Array<float8>& normals, const Array<float12>& output);
     }
 }

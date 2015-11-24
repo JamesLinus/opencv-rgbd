@@ -11,38 +11,38 @@ namespace kfusion
         KF_EXPORTS void error(const char *error_string, const char *file, const int line, const char *func = "");
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /** \brief @b DeviceMemory class
+        /** \brief @b Memory class
           *
           * \note This is a BLOB container class with reference counting for GPU memory.
           *
           * \author Anatoly Baksheev
           */
 
-        class KF_EXPORTS DeviceMemory
+        class KF_EXPORTS Memory
         {
         public:
             /** \brief Empty constructor. */
-            DeviceMemory();
+            Memory();
 
             /** \brief Destructor. */
-            ~DeviceMemory();
+            ~Memory();
 
             /** \brief Allocates internal buffer in GPU memory
               * \param sizeBytes_arg: amount of memory to allocate
               * */
-            DeviceMemory(size_t sizeBytes_arg);
+            Memory(size_t sizeBytes_arg);
 
             /** \brief Initializes with user allocated buffer. Reference counting is disabled in this case.
               * \param ptr_arg: pointer to buffer
               * \param sizeBytes_arg: buffer size
               * */
-            DeviceMemory(void *ptr_arg, size_t sizeBytes_arg);
+            Memory(void *ptr_arg, size_t sizeBytes_arg);
 
             /** \brief Copy constructor. Just increments reference counter. */
-            DeviceMemory(const DeviceMemory& other_arg);
+            Memory(const Memory& other_arg);
 
             /** \brief Assigment operator. Just increments reference counter. */
-            DeviceMemory& operator=(const DeviceMemory& other_arg);
+            Memory& operator=(const Memory& other_arg);
 
              /** \brief Allocates internal buffer in GPU memory. If internal buffer was created before the function recreates it with new size. If new and old sizes are equal it does nothing.
                * \param sizeBytes_arg: buffer size
@@ -55,7 +55,7 @@ namespace kfusion
             /** \brief Performs data copying. If destination size differs it will be reallocated.
               * \param other_arg: destination container
               * */
-            void copyTo(DeviceMemory& other) const;
+            void copyTo(Memory& other) const;
 
             /** \brief Uploads data to internal buffer in GPU memory. It calls create() inside to ensure that intenal buffer size is enough.
               * \param host_ptr_arg: pointer to buffer to upload
@@ -71,7 +71,7 @@ namespace kfusion
             /** \brief Performs swap of data pointed with another device memory.
               * \param other: device memory to swap with
               * */
-            void swap(DeviceMemory& other_arg);
+            void swap(Memory& other_arg);
 
             /** \brief Returns pointer for internal buffer in GPU memory. */
             template<class T> T* ptr();
@@ -99,27 +99,27 @@ namespace kfusion
         };
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /** \brief @b DeviceMemory2D class
+        /** \brief @b Memory2D class
           *
           * \note This is a BLOB container class with reference counting for pitched GPU memory.
           *
           * \author Anatoly Baksheev
           */
 
-        class KF_EXPORTS DeviceMemory2D
+        class KF_EXPORTS Memory2D
         {
         public:
             /** \brief Empty constructor. */
-            DeviceMemory2D();
+            Memory2D();
 
             /** \brief Destructor. */
-            ~DeviceMemory2D();
+            ~Memory2D();
 
             /** \brief Allocates internal buffer in GPU memory
               * \param rows_arg: number of rows to allocate
               * \param colsBytes_arg: width of the buffer in bytes
               * */
-            DeviceMemory2D(int rows_arg, int colsBytes_arg);
+            Memory2D(int rows_arg, int colsBytes_arg);
 
 
             /** \brief Initializes with user allocated buffer. Reference counting is disabled in this case.
@@ -128,13 +128,13 @@ namespace kfusion
               * \param data_arg: pointer to buffer
               * \param stepBytes_arg: stride between two consecutive rows in bytes
               * */
-            DeviceMemory2D(int rows_arg, int colsBytes_arg, void *data_arg, size_t step_arg);
+            Memory2D(int rows_arg, int colsBytes_arg, void *data_arg, size_t step_arg);
 
             /** \brief Copy constructor. Just increments reference counter. */
-            DeviceMemory2D(const DeviceMemory2D& other_arg);
+            Memory2D(const Memory2D& other_arg);
 
             /** \brief Assigment operator. Just increments reference counter. */
-            DeviceMemory2D& operator=(const DeviceMemory2D& other_arg);
+            Memory2D& operator=(const Memory2D& other_arg);
 
             /** \brief Allocates internal buffer in GPU memory. If internal buffer was created before the function recreates it with new size. If new and old sizes are equal it does nothing.
                * \param ptr_arg: number of rows to allocate
@@ -148,7 +148,7 @@ namespace kfusion
             /** \brief Performs data copying. If destination size differs it will be reallocated.
               * \param other_arg: destination container
               * */
-            void copyTo(DeviceMemory2D& other) const;
+            void copyTo(Memory2D& other) const;
 
             /** \brief Uploads data to internal buffer in GPU memory. It calls create() inside to ensure that intenal buffer size is enough.
               * \param host_ptr_arg: pointer to host buffer to upload
@@ -167,7 +167,7 @@ namespace kfusion
             /** \brief Performs swap of data pointed with another device memory.
               * \param other: device memory to swap with
               * */
-            void swap(DeviceMemory2D& other_arg);
+            void swap(Memory2D& other_arg);
 
             /** \brief Returns pointer to given row in internal buffer.
               * \param y_arg: row index
@@ -216,17 +216,17 @@ namespace kfusion
 
     namespace device
     {
-        using kfusion::cuda::DeviceMemory;
-        using kfusion::cuda::DeviceMemory2D;
+        using kfusion::cuda::Memory;
+        using kfusion::cuda::Memory2D;
     }
 }
 
-/////////////////////  Inline implementations of DeviceMemory ////////////////////////////////////////////
+/////////////////////  Inline implementations of Memory ////////////////////////////////////////////
 
-template<class T> inline       T* kfusion::cuda::DeviceMemory::ptr()       { return (      T*)data_; }
-template<class T> inline const T* kfusion::cuda::DeviceMemory::ptr() const { return (const T*)data_; }
+template<class T> inline       T* kfusion::cuda::Memory::ptr()       { return (      T*)data_; }
+template<class T> inline const T* kfusion::cuda::Memory::ptr() const { return (const T*)data_; }
 
-template <class U> inline kfusion::cuda::DeviceMemory::operator kfusion::cuda::PtrSz<U>() const
+template <class U> inline kfusion::cuda::Memory::operator kfusion::cuda::PtrSz<U>() const
 {
     PtrSz<U> result;
     result.data = (U*)ptr<U>();
@@ -234,12 +234,12 @@ template <class U> inline kfusion::cuda::DeviceMemory::operator kfusion::cuda::P
     return result;
 }
 
-/////////////////////  Inline implementations of DeviceMemory2D ////////////////////////////////////////////
+/////////////////////  Inline implementations of Memory2D ////////////////////////////////////////////
 
-template<class T>        T* kfusion::cuda::DeviceMemory2D::ptr(int y_arg)       { return (      T*)((      char*)data_ + y_arg * step_); }
-template<class T>  const T* kfusion::cuda::DeviceMemory2D::ptr(int y_arg) const { return (const T*)((const char*)data_ + y_arg * step_); }
+template<class T>        T* kfusion::cuda::Memory2D::ptr(int y_arg)       { return (      T*)((      char*)data_ + y_arg * step_); }
+template<class T>  const T* kfusion::cuda::Memory2D::ptr(int y_arg) const { return (const T*)((const char*)data_ + y_arg * step_); }
 
-template <class U> kfusion::cuda::DeviceMemory2D::operator kfusion::cuda::PtrStep<U>() const
+template <class U> kfusion::cuda::Memory2D::operator kfusion::cuda::PtrStep<U>() const
 {
     PtrStep<U> result;
     result.data = (U*)ptr<U>();
@@ -247,7 +247,7 @@ template <class U> kfusion::cuda::DeviceMemory2D::operator kfusion::cuda::PtrSte
     return result;
 }
 
-template <class U> kfusion::cuda::DeviceMemory2D::operator kfusion::cuda::PtrStepSz<U>() const
+template <class U> kfusion::cuda::Memory2D::operator kfusion::cuda::PtrStepSz<U>() const
 {
     PtrStepSz<U> result;
     result.data = (U*)ptr<U>();

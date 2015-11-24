@@ -28,7 +28,7 @@ void kfusion::cuda::computeNormalsAndMaskDepth(const Intr& intr, Depth& depth, N
     device::computeNormalsAndMaskDepth(reproj, depth, n);
 }
 
-void kfusion::cuda::computePointNormals(const Intr& intr, const Depth& depth, Cloud& points, Normals& normals)
+void kfusion::cuda::computePointNormals(const Intr& intr, const Depth& depth, Points& points, Normals& normals)
 {
     points.create(depth.rows(), depth.cols());
     normals.create(depth.rows(), depth.cols());
@@ -58,7 +58,7 @@ void kfusion::cuda::resizeDepthNormals(const Depth& depth, const Normals& normal
     device::resizeDepthNormals(depth, nsrc, depth_out, ndst);
 }
 
-void kfusion::cuda::resizePointsNormals(const Cloud& points, const Normals& normals, Cloud& points_out, Normals& normals_out)
+void kfusion::cuda::resizePointsNormals(const Points& points, const Normals& normals, Points& points_out, Normals& normals_out)
 {
     points_out.create (points.rows()/2, points.cols()/2);
     normals_out.create (normals.rows()/2, normals.cols()/2);
@@ -73,7 +73,7 @@ void kfusion::cuda::resizePointsNormals(const Cloud& points, const Normals& norm
 }
 
 
-void kfusion::cuda::renderImage(const Depth& depth, const Normals& normals, const Intr& intr, const Vec3f& light_pose, Image& image)
+void kfusion::cuda::renderImage(const Depth& depth, const Normals& normals, const Intr& intr, const cv::Vec3f& light_pose, Image& image)
 {
     image.create(depth.rows(), depth.cols());
 
@@ -87,7 +87,7 @@ void kfusion::cuda::renderImage(const Depth& depth, const Normals& normals, cons
     waitAllDefaultStream();
 }
 
-void kfusion::cuda::renderImage(const Cloud& points, const Normals& normals, const Intr& intr, const Vec3f& light_pose, Image& image)
+void kfusion::cuda::renderImage(const Points& points, const Normals& normals, const Intr& intr, const cv::Vec3f& light_pose, Image& image)
 {
     image.create(points.rows(), points.cols());
 

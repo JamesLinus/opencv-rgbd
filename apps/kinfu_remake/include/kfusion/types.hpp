@@ -10,11 +10,6 @@ struct CUevent_st;
 
 namespace kfusion
 {
-    typedef cv::Matx33f Mat3f;
-    typedef cv::Vec3f Vec3f;
-    typedef cv::Vec3i Vec3i;
-    typedef cv::Affine3f Affine3f;
-
     struct KF_EXPORTS Intr
     {
         float fx, fy, cx, cy;
@@ -60,19 +55,19 @@ namespace kfusion
 
     namespace cuda
     {
-        typedef cuda::DeviceMemory CudaData;
-        typedef cuda::DeviceArray2D<unsigned short> Depth;
-        typedef cuda::DeviceArray2D<unsigned short> Dists;
-        typedef cuda::DeviceArray2D<RGB> Image;
-        typedef cuda::DeviceArray2D<Normal> Normals;
-        typedef cuda::DeviceArray2D<Point> Cloud;
+        typedef cuda::Memory CudaData;
+        typedef cuda::Array2D<ushort> Depth;
+        typedef cuda::Array2D<ushort> Dists;
+        typedef cuda::Array2D<RGB> Image;
+        typedef cuda::Array2D<Normal> Normals;
+        typedef cuda::Array2D<Point> Points;
 
         struct Frame
         {
             bool use_points;
 
             std::vector<Depth> depth_pyr;
-            std::vector<Cloud> points_pyr;
+            std::vector<Points> points_pyr;
             std::vector<Normals> normals_pyr;
         };
     }

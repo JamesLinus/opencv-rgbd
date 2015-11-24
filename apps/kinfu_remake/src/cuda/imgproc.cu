@@ -590,7 +590,7 @@ namespace kfusion
     }
 }
 
-void kfusion::device::mergePointNormal (const DeviceArray<Point>& cloud, const DeviceArray<float8>& normals, const DeviceArray<float12>& output)
+void kfusion::device::mergePointNormal (const Array<Point>& cloud, const Array<float8>& normals, const Array<float12>& output)
 {
     const int block = 256;
     int total = (int)output.size ();
