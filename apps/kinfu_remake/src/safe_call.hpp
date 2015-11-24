@@ -24,13 +24,6 @@ namespace kf
         {
             if (cudaSuccess != err)
                 error(cudaGetErrorString(err), file, line, func);
-        }        
-
-        static inline int divUp(int total, int grain) { return (total + grain - 1) / grain; }
-    }
-
-    namespace device
-    {
-        using kf::cuda::divUp;
+        }
     }
 }

@@ -19,13 +19,13 @@ namespace kf
     }
 
     template<>
-    inline device::Aff3f device_cast<device::Aff3f, cv::Affine3f>(const cv::Affine3f& source)
+    inline impl::Aff3f device_cast<impl::Aff3f, cv::Affine3f>(const cv::Affine3f& source)
     {
-        device::Aff3f aff;
+        impl::Aff3f aff;
         cv::Matx33f R = source.rotation();
         cv::Vec3f t = source.translation();
-        aff.R = device_cast<device::Mat3f>(R);
-        aff.t = device_cast<device::Vec3f>(t);
+        aff.R = device_cast<impl::Mat3f>(R);
+        aff.t = device_cast<impl::Vec3f>(t);
         return aff;
     }
 }

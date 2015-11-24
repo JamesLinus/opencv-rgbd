@@ -5,7 +5,7 @@
 
 namespace kf
 {
-    namespace device
+    namespace impl
     {
         template <class T> __kf_hdevice__ void swap(T& a, T& b) { T c(a); a=b; b=c; }
 

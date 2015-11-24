@@ -5,7 +5,7 @@
 
 namespace kf
 {
-    namespace device
+    namespace impl
     {
         __global__ void bilateral_kernel(const cuda::PtrStepSz<ushort> src, cuda::PtrStep<ushort> dst, const int ksz, const float sigma_spatial2_inv_half, const float sigma_depth2_inv_half)
         {
@@ -43,7 +43,7 @@ namespace kf
     }
 }
 
-void kf::device::bilateralFilter (const Depth& src, Depth& dst, int kernel_size, float sigma_spatial, float sigma_depth)
+void kf::impl::bilateralFilter (const Depth& src, Depth& dst, int kernel_size, float sigma_spatial, float sigma_depth)
 {
     sigma_depth *= 1000; // meters -> mm
 
@@ -60,7 +60,7 @@ void kf::device::bilateralFilter (const Depth& src, Depth& dst, int kernel_size,
 
 namespace kf
 {
-    namespace device
+    namespace impl
     {
         __global__ void truncate_depth_kernel(cuda::PtrStepSz<ushort> depth, ushort max_dist /*mm*/)
         {
@@ -74,7 +74,7 @@ namespace kf
     }
 }
 
-void kf::device::truncateDepth(Depth& depth, float max_dist /*meters*/)
+void kf::impl::truncateDepth(Depth& depth, float max_dist /*meters*/)
 {
     dim3 block (32, 8);
     dim3 grid (divUp (depth.cols (), block.x), divUp (depth.rows (), block.y));
@@ -88,7 +88,7 @@ void kf::device::truncateDepth(Depth& depth, float max_dist /*meters*/)
 
 namespace kf
 {
-    namespace device
+    namespace impl
     {
         __global__ void pyramid_kernel(const cuda::PtrStepSz<ushort> src, cuda::PtrStepSz<ushort> dst, float sigma_depth_mult3)
         {
@@ -123,7 +123,7 @@ namespace kf
     }
 }
 
-void kf::device::depthPyr(const Depth& source, Depth& pyramid, float sigma_depth)
+void kf::impl::depthPyr(const Depth& source, Depth& pyramid, float sigma_depth)
 {
     sigma_depth *= 1000; // meters -> mm
 
@@ -139,7 +139,7 @@ void kf::device::depthPyr(const Depth& source, Depth& pyramid, float sigma_depth
 
 namespace kf
 {
-    namespace device
+    namespace impl
     {
         __global__ void compute_normals_kernel(const cuda::PtrStepSz<ushort> depth, const Reprojector reproj, cuda::PtrStep<Normal> normals)
         {
@@ -188,7 +188,7 @@ namespace kf
     }
 }
 
-void kf::device::computeNormalsAndMaskDepth(const Reprojector& reproj, Depth& depth, Normals& normals)
+void kf::impl::computeNormalsAndMaskDepth(const Reprojector& reproj, Depth& depth, Normals& normals)
 {
     dim3 block (32, 8);
     dim3 grid (divUp (depth.cols (), block.x), divUp (depth.rows (), block.y));
@@ -204,7 +204,7 @@ void kf::device::computeNormalsAndMaskDepth(const Reprojector& reproj, Depth& de
 
 namespace kf
 {
-    namespace device
+    namespace impl
     {
         __global__ void points_normals_kernel(const Reprojector reproj, const cuda::PtrStepSz<ushort> depth, cuda::PtrStep<Point> points, cuda::PtrStep<Normal> normals)
         {
@@ -239,7 +239,7 @@ namespace kf
     }
 }
 
-void kf::device::computePointNormals(const Reprojector& reproj, const Depth& depth, Points& points, Normals& normals)
+void kf::impl::computePointNormals(const Reprojector& reproj, const Depth& depth, Points& points, Normals& normals)
 {
     dim3 block (32, 8);
     dim3 grid (divUp (depth.cols (), block.x), divUp (depth.rows (), block.y));
@@ -253,7 +253,7 @@ void kf::device::computePointNormals(const Reprojector& reproj, const Depth& dep
 
 namespace kf
 {
-    namespace device
+    namespace impl
     {
         __global__ void compute_dists_kernel(const cuda::PtrStepSz<ushort> depth, Dists dists, float2 finv, float2 c)
         {
@@ -272,7 +272,7 @@ namespace kf
     }
 }
 
-void kf::device::compute_dists(const Depth& depth, Dists dists, float2 f, float2 c)
+void kf::impl::compute_dists(const Depth& depth, Dists dists, float2 f, float2 c)
 {
     dim3 block (32, 8);
     dim3 grid (divUp (depth.cols (), block.x), divUp (depth.rows (), block.y));
@@ -283,7 +283,7 @@ void kf::device::compute_dists(const Depth& depth, Dists dists, float2 f, float2
 
 namespace kf
 {
-    namespace device
+    namespace impl
     {
         __global__ void resize_depth_normals_kernel(const cuda::PtrStep<ushort> dsrc, const cuda::PtrStep<float4> nsrc, cuda::PtrStepSz<ushort> ddst, cuda::PtrStep<float4> ndst)
         {
@@ -325,7 +325,7 @@ namespace kf
     }
 }
 
-void kf::device::resizeDepthNormals(const Depth& depth, const Normals& normals, Depth& depth_out, Normals& normals_out)
+void kf::impl::resizeDepthNormals(const Depth& depth, const Normals& normals, Depth& depth_out, Normals& normals_out)
 {
     int in_cols = depth.cols ();
     int in_rows = depth.rows ();
@@ -342,7 +342,7 @@ void kf::device::resizeDepthNormals(const Depth& depth, const Normals& normals, 
 
 namespace kf
 {
-    namespace device
+    namespace impl
     {
         __global__ void resize_points_normals_kernel(const cuda::PtrStep<Point> vsrc, const cuda::PtrStep<Normal> nsrc, cuda::PtrStepSz<Point> vdst, cuda::PtrStep<Normal> ndst)
         {
@@ -380,7 +380,7 @@ namespace kf
     }
 }
 
-void kf::device::resizePointsNormals(const Points& points, const Normals& normals, Points& points_out, Normals& normals_out)
+void kf::impl::resizePointsNormals(const Points& points, const Normals& normals, Points& points_out, Normals& normals_out)
 {
     int out_cols = points.cols () / 2;
     int out_rows = points.rows () / 2;
@@ -394,7 +394,7 @@ void kf::device::resizePointsNormals(const Points& points, const Normals& normal
 
 namespace kf
 {
-    namespace device
+    namespace impl
     {
         __global__ void render_image_kernel(const cuda::PtrStep<ushort> depth, const cuda::PtrStep<Normal> normals,
                                             const Reprojector reproj, const float3 light_pose, cuda::PtrStepSz<uchar4> dst)
@@ -506,7 +506,7 @@ namespace kf
     }
 }
 
-void kf::device::renderImage(const Depth& depth, const Normals& normals, const Reprojector& reproj, const float3& light_pose, Image& image)
+void kf::impl::renderImage(const Depth& depth, const Normals& normals, const Reprojector& reproj, const float3& light_pose, Image& image)
 {
     dim3 block (32, 8);
     dim3 grid (divUp (depth.cols(), block.x), divUp (depth.rows(), block.y));
@@ -515,7 +515,7 @@ void kf::device::renderImage(const Depth& depth, const Normals& normals, const R
     cudaSafeCall ( cudaGetLastError () );
 }
 
-void kf::device::renderImage(const Points& points, const Normals& normals, const Reprojector& reproj, const Vec3f& light_pose, Image& image)
+void kf::impl::renderImage(const Points& points, const Normals& normals, const Reprojector& reproj, const Vec3f& light_pose, Image& image)
 {
     dim3 block (32, 8);
     dim3 grid (divUp (points.cols(), block.x), divUp (points.rows(), block.y));
@@ -526,7 +526,7 @@ void kf::device::renderImage(const Points& points, const Normals& normals, const
 
 namespace kf
 {
-    namespace device
+    namespace impl
     {
         __global__ void tangent_colors_kernel(cuda::PtrStepSz<Normal> normals, cuda::PtrStep<uchar4> colors)
         {
@@ -552,7 +552,7 @@ namespace kf
     }
 }
 
-void kf::device::renderTangentColors(const Normals& normals, Image& image)
+void kf::impl::renderTangentColors(const Normals& normals, Image& image)
 {
     dim3 block (32, 8);
     dim3 grid (divUp (normals.cols(), block.x), divUp (normals.rows(), block.y));
@@ -564,7 +564,7 @@ void kf::device::renderTangentColors(const Normals& normals, Image& image)
 
 namespace kf
 {
-    namespace device
+    namespace impl
     {
         __global__ void mergePointNormalKernel (const Point* cloud, const float8* normals, cuda::PtrSz<float12> output)
         {
@@ -590,7 +590,7 @@ namespace kf
     }
 }
 
-void kf::device::mergePointNormal (const cuda::Array<Point>& cloud, const cuda::Array<float8>& normals, const cuda::Array<float12>& output)
+void kf::impl::mergePointNormal (const cuda::Array<Point>& cloud, const cuda::Array<float8>& normals, const cuda::Array<float12>& output)
 {
     const int block = 256;
     int total = (int)output.size ();

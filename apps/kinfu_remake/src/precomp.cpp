@@ -21,27 +21,27 @@ std::ostream& operator << (std::ostream& os, const kf::Intr& intr)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// TsdfVolume host implementation
 
-kf::device::TsdfVolume::TsdfVolume(elem_type* _data, int3 _dims, float3 _voxel_size, float _trunc_dist, int _max_weight)
+kf::impl::TsdfVolume::TsdfVolume(elem_type* _data, int3 _dims, float3 _voxel_size, float _trunc_dist, int _max_weight)
 : data(_data), dims(_dims), voxel_size(_voxel_size), trunc_dist(_trunc_dist), max_weight(_max_weight) {}
 
-//kf::device::TsdfVolume::elem_type* kfusionl::device::TsdfVolume::operator()(int x, int y, int z)
+//kf::impl::TsdfVolume::elem_type* kfusionl::impl::TsdfVolume::operator()(int x, int y, int z)
 //{ return data + x + y*dims.x + z*dims.y*dims.x; }
 //
-//const kf::device::TsdfVolume::elem_type* kfusionl::device::TsdfVolume::operator() (int x, int y, int z) const
+//const kf::impl::TsdfVolume::elem_type* kfusionl::impl::TsdfVolume::operator() (int x, int y, int z) const
 //{ return data + x + y*dims.x + z*dims.y*dims.x; }
 //
-//kf::device::TsdfVolume::elem_type* kfusionl::device::TsdfVolume::beg(int x, int y) const
+//kf::impl::TsdfVolume::elem_type* kfusionl::impl::TsdfVolume::begin(int x, int y) const
 //{ return data + x + dims.x * y; }
 //
-//kf::device::TsdfVolume::elem_type* kfusionl::device::TsdfVolume::zstep(elem_type *const ptr) const
+//kf::impl::TsdfVolume::elem_type* kfusionl::impl::TsdfVolume::zstep(elem_type *const ptr) const
 //{ return data + dims.x * dims.y; }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Projector host implementation
 
-kf::device::Projector::Projector(float fx, float fy, float cx, float cy) : f(make_float2(fx, fy)), c(make_float2(cx, cy)) {}
+kf::impl::Projector::Projector(float fx, float fy, float cx, float cy) : f(make_float2(fx, fy)), c(make_float2(cx, cy)) {}
 
-//float2 kf::device::Projector::operator()(const float3& p) const
+//float2 kf::impl::Projector::operator()(const float3& p) const
 //{
 //  float2 coo;
 //  coo.x = p.x * f.x / p.z + c.x;
@@ -52,9 +52,9 @@ kf::device::Projector::Projector(float fx, float fy, float cx, float cy) : f(mak
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Reprojector host implementation
 
-kf::device::Reprojector::Reprojector(float fx, float fy, float cx, float cy) : finv(make_float2(1.f/fx, 1.f/fy)), c(make_float2(cx, cy)) {}
+kf::impl::Reprojector::Reprojector(float fx, float fy, float cx, float cy) : finv(make_float2(1.f/fx, 1.f/fy)), c(make_float2(cx, cy)) {}
 
-//float3 kf::device::Reprojector::operator()(int u, int v, float z) const
+//float3 kf::impl::Reprojector::operator()(int u, int v, float z) const
 //{
 //  float x = z * (u - c.x) * finv.x;
 //  float y = z * (v - c.y) * finv.y;
@@ -64,7 +64,7 @@ kf::device::Reprojector::Reprojector(float fx, float fy, float cx, float cy) : f
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Host implementation of packing/unpacking tsdf volume element
 
-//ushort2 kf::device::pack_tsdf(float tsdf, int weight) { throw "Not implemented"; return ushort2(); }
-//float kf::device::unpack_tsdf(ushort2 value, int& weight) { throw "Not implemented"; return 0; }
-//float kf::device::unpack_tsdf(ushort2 value) { throw "Not implemented"; return 0; }
+//ushort2 kf::impl::pack_tsdf(float tsdf, int weight) { throw "Not implemented"; return ushort2(); }
+//float kf::impl::unpack_tsdf(ushort2 value, int& weight) { throw "Not implemented"; return 0; }
+//float kf::impl::unpack_tsdf(ushort2 value) { throw "Not implemented"; return 0; }
 

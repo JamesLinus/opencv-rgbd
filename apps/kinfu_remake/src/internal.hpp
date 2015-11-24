@@ -7,7 +7,7 @@
 
 namespace kf
 {
-    namespace device
+    namespace impl
     {
         typedef float4 Normal;
         typedef float4 Point;
@@ -42,7 +42,7 @@ namespace kf
 
             __kf_device__ elem_type* operator()(int x, int y, int z);
             __kf_device__ const elem_type* operator() (int x, int y, int z) const ;
-            __kf_device__ elem_type* beg(int x, int y) const;
+            __kf_device__ elem_type* begin(int x, int y) const;
             __kf_device__ elem_type* zstep(elem_type *const ptr) const;
         private:
             TsdfVolume& operator=(const TsdfVolume&);

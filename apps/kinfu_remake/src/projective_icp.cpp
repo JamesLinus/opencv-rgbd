@@ -1,20 +1,17 @@
 #include "precomp.hpp"
 
-
-using namespace kf;
 using namespace std;
-using namespace kf::cuda;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// ComputeIcpHelper
 
-kf::device::ComputeIcpHelper::ComputeIcpHelper(float dist_thres, float angle_thres)
+kf::impl::ComputeIcpHelper::ComputeIcpHelper(float dist_thres, float angle_thres)
 {
     min_cosine = cos(angle_thres);
     dist2_thres = dist_thres * dist_thres;
 }
 
-void kf::device::ComputeIcpHelper::setLevelIntr(int level_index, float fx, float fy, float cx, float cy)
+void kf::impl::ComputeIcpHelper::setLevelIntr(int level_index, float fx, float fy, float cx, float cy)
 {
     int div = 1 << level_index;
     f = make_float2(fx/div, fy/div);
@@ -27,7 +24,7 @@ void kf::device::ComputeIcpHelper::setLevelIntr(int level_index, float fx, float
 
 struct kf::cuda::ProjectiveICP::StreamHelper
 {
-    typedef device::ComputeIcpHelper::PageLockHelper PageLockHelper;
+    typedef impl::ComputeIcpHelper::PageLockHelper PageLockHelper;
     typedef cv::Matx66f Mat6f;
     typedef cv::Vec6f Vec6f;
 
@@ -70,7 +67,7 @@ kf::cuda::ProjectiveICP::ProjectiveICP() : angle_thres_(deg2rad(20.f)), dist_thr
     const int iters[] = {10, 5, 4, 0};
     std::vector<int> vector_iters(iters, iters + 4);
     setIterationsNum(vector_iters);
-    device::ComputeIcpHelper::allocate_buffer(buffer_);
+    impl::ComputeIcpHelper::allocate_buffer(buffer_);
 
     shelp_ = cv::makePtr<StreamHelper>();
 }
@@ -130,12 +127,12 @@ bool kf::cuda::ProjectiveICP::estimateTransform(cv::Affine3f& affine, const Intr
     const int LEVELS = getUsedLevelsNum();
     StreamHelper& sh = *shelp_;
 
-    device::ComputeIcpHelper helper(dist_thres_, angle_thres_);
+    impl::ComputeIcpHelper helper(dist_thres_, angle_thres_);
     affine = cv::Affine3f::Identity();
 
     for(int level_index = LEVELS - 1; level_index >= 0; --level_index)
     {
-        const device::Normals& n = (const device::Normals& )nprev[level_index];
+        const impl::Normals& n = (const impl::Normals& )nprev[level_index];
 
         helper.rows = (float)n.rows();
         helper.cols = (float)n.cols();
@@ -145,7 +142,7 @@ bool kf::cuda::ProjectiveICP::estimateTransform(cv::Affine3f& affine, const Intr
 
         for(int iter = 0; iter < iters_[level_index]; ++iter)
         {
-            helper.aff = device_cast<device::Aff3f>(affine);
+            helper.aff = device_cast<impl::Aff3f>(affine);
             helper(dprev[level_index], n, buffer_, sh, sh);
 
             StreamHelper::Vec6f b;
@@ -176,13 +173,13 @@ bool kf::cuda::ProjectiveICP::estimateTransform(cv::Affine3f& affine, const Intr
     const int LEVELS = getUsedLevelsNum();
     StreamHelper& sh = *shelp_;
 
-    device::ComputeIcpHelper helper(dist_thres_, angle_thres_);
+    impl::ComputeIcpHelper helper(dist_thres_, angle_thres_);
     affine = cv::Affine3f::Identity();
 
     for(int level_index = LEVELS - 1; level_index >= 0; --level_index)
     {
-        const device::Normals& n = (const device::Normals& )nprev[level_index];
-        const device::Points& v = (const device::Points& )vprev[level_index];
+        const impl::Normals& n = (const impl::Normals& )nprev[level_index];
+        const impl::Points& v = (const impl::Points& )vprev[level_index];
 
         helper.rows = (float)n.rows();
         helper.cols = (float)n.cols();
@@ -192,7 +189,7 @@ bool kf::cuda::ProjectiveICP::estimateTransform(cv::Affine3f& affine, const Intr
 
         for(int iter = 0; iter < iters_[level_index]; ++iter)
         {
-            helper.aff = device_cast<device::Aff3f>(affine);
+            helper.aff = device_cast<impl::Aff3f>(affine);
             helper(v, n, buffer_, sh, sh);
 
             StreamHelper::Vec6f b;

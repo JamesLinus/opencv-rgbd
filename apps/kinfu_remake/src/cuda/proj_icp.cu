@@ -4,7 +4,7 @@
 
 namespace kf
 {
-    namespace device
+    namespace impl
     {
         texture<ushort, 2> dprev_tex;
         texture<Normal, 2> nprev_tex;
@@ -395,7 +395,7 @@ namespace kf
     }
 }
 
-void kf::device::ComputeIcpHelper::operator()(const Depth& dprev, const Normals& nprev, cuda::Array2D<float>& buffer, float* data, cudaStream_t s)
+void kf::impl::ComputeIcpHelper::operator()(const Depth& dprev, const Normals& nprev, cuda::Array2D<float>& buffer, float* data, cudaStream_t s)
 {
     dprev_tex.filterMode = cudaFilterModePoint;
     nprev_tex.filterMode = cudaFilterModePoint;
@@ -420,7 +420,7 @@ void kf::device::ComputeIcpHelper::operator()(const Depth& dprev, const Normals&
     cudaSafeCall ( cudaGetLastError () );
 }
 
-void kf::device::ComputeIcpHelper::operator()(const Points& vprev, const Normals& nprev, cuda::Array2D<float>& buffer, float* data, cudaStream_t s)
+void kf::impl::ComputeIcpHelper::operator()(const Points& vprev, const Normals& nprev, cuda::Array2D<float>& buffer, float* data, cudaStream_t s)
 {
     dprev_tex.filterMode = cudaFilterModePoint;
     nprev_tex.filterMode = cudaFilterModePoint;
@@ -446,7 +446,7 @@ void kf::device::ComputeIcpHelper::operator()(const Points& vprev, const Normals
 }
 
 
-void kf::device::ComputeIcpHelper::allocate_buffer(cuda::Array2D<float>& buffer, int partials_count)
+void kf::impl::ComputeIcpHelper::allocate_buffer(cuda::Array2D<float>& buffer, int partials_count)
 { 
     if (partials_count < 0)
     {
@@ -469,8 +469,8 @@ void kf::device::ComputeIcpHelper::allocate_buffer(cuda::Array2D<float>& buffer,
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// ComputeIcpHelper::PageLockHelper
 
-kf::device::ComputeIcpHelper::PageLockHelper::PageLockHelper() : data(0)
+kf::impl::ComputeIcpHelper::PageLockHelper::PageLockHelper() : data(0)
 { cudaSafeCall( cudaMallocHost((void **)&data, Policy::TOTAL * sizeof(float)) );  }
 
-kf::device::ComputeIcpHelper::PageLockHelper::~PageLockHelper()
+kf::impl::ComputeIcpHelper::PageLockHelper::~PageLockHelper()
 {   cudaSafeCall( cudaFreeHost(data) ); data = 0; }

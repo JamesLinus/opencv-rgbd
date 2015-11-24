@@ -7,29 +7,29 @@
 /// TsdfVolume
 
 //__kf_device__
-//kf::device::TsdfVolume::TsdfVolume(elem_type* _data, int3 _dims, float3 _voxel_size, float _trunc_dist, int _max_weight)
+//kf::impl::TsdfVolume::TsdfVolume(elem_type* _data, int3 _dims, float3 _voxel_size, float _trunc_dist, int _max_weight)
 //  : data(_data), dims(_dims), voxel_size(_voxel_size), trunc_dist(_trunc_dist), max_weight(_max_weight) {}
 
 //__kf_device__
-//kf::device::TsdfVolume::TsdfVolume(const TsdfVolume& other)
+//kf::impl::TsdfVolume::TsdfVolume(const TsdfVolume& other)
 //  : data(other.data), dims(other.dims), voxel_size(other.voxel_size), trunc_dist(other.trunc_dist), max_weight(other.max_weight) {}
 
-__kf_device__ kf::device::TsdfVolume::elem_type* kf::device::TsdfVolume::operator()(int x, int y, int z)
+__kf_device__ kf::impl::TsdfVolume::elem_type* kf::impl::TsdfVolume::operator()(int x, int y, int z)
 { return data + x + y*dims.x + z*dims.y*dims.x; }
 
-__kf_device__ const kf::device::TsdfVolume::elem_type* kf::device::TsdfVolume::operator() (int x, int y, int z) const
+__kf_device__ const kf::impl::TsdfVolume::elem_type* kf::impl::TsdfVolume::operator() (int x, int y, int z) const
 { return data + x + y*dims.x + z*dims.y*dims.x; }
 
-__kf_device__ kf::device::TsdfVolume::elem_type* kf::device::TsdfVolume::beg(int x, int y) const
+__kf_device__ kf::impl::TsdfVolume::elem_type* kf::impl::TsdfVolume::begin(int x, int y) const
 { return data + x + dims.x * y; }
 
-__kf_device__ kf::device::TsdfVolume::elem_type* kf::device::TsdfVolume::zstep(elem_type *const ptr) const
+__kf_device__ kf::impl::TsdfVolume::elem_type* kf::impl::TsdfVolume::zstep(elem_type *const ptr) const
 { return ptr + dims.x * dims.y; }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Projector
 
-__kf_device__ float2 kf::device::Projector::operator()(const float3& p) const
+__kf_device__ float2 kf::impl::Projector::operator()(const float3& p) const
 {
     float2 coo;
     coo.x = __fmaf_rn(f.x, __fdividef(p.x, p.z), c.x);
@@ -40,7 +40,7 @@ __kf_device__ float2 kf::device::Projector::operator()(const float3& p) const
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Reprojector
 
-__kf_device__ float3 kf::device::Reprojector::operator()(int u, int v, float z) const
+__kf_device__ float3 kf::impl::Reprojector::operator()(int u, int v, float z) const
 {
     float x = z * (u - c.x) * finv.x;
     float y = z * (v - c.y) * finv.y;
@@ -50,15 +50,15 @@ __kf_device__ float3 kf::device::Reprojector::operator()(int u, int v, float z) 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// packing/unpacking tsdf volume element
 
-__kf_device__ ushort2 kf::device::pack_tsdf (float tsdf, int weight)
+__kf_device__ ushort2 kf::impl::pack_tsdf (float tsdf, int weight)
 { return make_ushort2 (__float2half_rn (tsdf), weight); }
 
-__kf_device__ float kf::device::unpack_tsdf(ushort2 value, int& weight)
+__kf_device__ float kf::impl::unpack_tsdf(ushort2 value, int& weight)
 {
     weight = value.y;
     return __half2float (value.x);
 }
-__kf_device__ float kf::device::unpack_tsdf (ushort2 value) { return __half2float (value.x); }
+__kf_device__ float kf::impl::unpack_tsdf (ushort2 value) { return __half2float (value.x); }
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ __kf_device__ float kf::device::unpack_tsdf (ushort2 value) { return __half2floa
 
 namespace kf
 {
-    namespace device
+    namespace impl
     {
         __kf_device__ Vec3f operator*(const Mat3f& m, const Vec3f& v)
         { return make_float3(dot(m.data[0], v), dot (m.data[1], v), dot (m.data[2], v)); }
@@ -89,6 +89,8 @@ namespace kf
 
         template<> __kf_device__ ushort2 gmem::LdCs(ushort2* ptr);
         template<> __kf_device__ void gmem::StCs(const ushort2& val, ushort2* ptr);
+
+        static inline int divUp(int total, int grain) { return (total + grain - 1) / grain; }
     }
 }
 
@@ -101,14 +103,14 @@ namespace kf
         #define _ASM_PTR_ "r"
     #endif
 
-    template<> __kf_device__ ushort2 kf::device::gmem::LdCs(ushort2* ptr)
+    template<> __kf_device__ ushort2 kf::impl::gmem::LdCs(ushort2* ptr)
     {
         ushort2 val;
         asm("ld.global.cs.v2.u16 {%0, %1}, [%2];" : "=h"(reinterpret_cast<ushort&>(val.x)), "=h"(reinterpret_cast<ushort&>(val.y)) : _ASM_PTR_(ptr));
         return val;
     }
 
-    template<> __kf_device__ void kf::device::gmem::StCs(const ushort2& val, ushort2* ptr)
+    template<> __kf_device__ void kf::impl::gmem::StCs(const ushort2& val, ushort2* ptr)
     {
         short cx = val.x, cy = val.y;
         asm("st.global.cs.v2.u16 [%0], {%1, %2};" : : _ASM_PTR_(ptr), "h"(reinterpret_cast<ushort&>(cx)), "h"(reinterpret_cast<ushort&>(cy)));
@@ -116,8 +118,8 @@ namespace kf
     #undef _ASM_PTR_
 
 #else
-    template<> __kf_device__ ushort2 kf::device::gmem::LdCs(ushort2* ptr) { return *ptr; }
-    template<> __kf_device__ void kf::device::gmem::StCs(const ushort2& val, ushort2* ptr) { *ptr = val; }
+    template<> __kf_device__ ushort2 kf::impl::gmem::LdCs(ushort2* ptr) { return *ptr; }
+    template<> __kf_device__ void kf::impl::gmem::StCs(const ushort2& val, ushort2* ptr) { *ptr = val; }
 #endif
 
 
