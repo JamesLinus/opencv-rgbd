@@ -522,7 +522,7 @@ void kf::impl::renderImage(const Points& points, const Normals& normals, const R
     dim3 block (32, 8);
     dim3 grid (divUp (points.cols(), block.x), divUp (points.rows(), block.y));
 
-    render_image_kernel << <grid, block >> >((cv::cuda::PtrStep<Point>)points, normals, reproj, light_pose, image);
+    render_image_kernel <<<grid, block >>>((cv::cuda::PtrStep<Point>)points, normals, reproj, light_pose, image);
     cudaSafeCall ( cudaGetLastError () );
 }
 
