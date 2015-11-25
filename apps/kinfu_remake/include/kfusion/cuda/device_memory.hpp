@@ -1,15 +1,11 @@
 #pragma once
 
-#include <kfusion/exports.hpp>
-#include <kfusion/cuda/kernel_containers.hpp>
+#include <opencv2/core/cuda/common.hpp>
 
 namespace kf
 {
     namespace cuda
     {
-        /** \brief Error handler. All GPU functions from this subsystem call the function to report an error. For internal use only */
-        KF_EXPORTS void error(const char *error_string, const char *file, const int line, const char *func = "");
-
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /** \brief @b Memory class
           *
@@ -18,7 +14,7 @@ namespace kf
           * \author Anatoly Baksheev
           */
 
-        class KF_EXPORTS Memory
+        class Memory
         {
         public:
             /** \brief Empty constructor. */
@@ -80,7 +76,7 @@ namespace kf
             template<class T> const T* ptr() const;
 
             /** \brief Conversion to PtrSz for passing to kernel functions. */
-            template <class U> operator PtrSz<U>() const;
+            template <class U> operator cv::cuda::PtrSz<U>() const;
 
             /** \brief Returns true if unallocated otherwise false. */
             bool empty() const;
@@ -106,7 +102,7 @@ namespace kf
           * \author Anatoly Baksheev
           */
 
-        class KF_EXPORTS Memory2D
+        class Memory2D
         {
         public:
             /** \brief Empty constructor. */
@@ -180,10 +176,10 @@ namespace kf
             template<class T> const T* ptr(int y_arg = 0) const;
 
              /** \brief Conversion to PtrStep for passing to kernel functions. */
-            template <class U> operator PtrStep<U>() const;
+            template <class U> operator cv::cuda::PtrStep<U>() const;
 
             /** \brief Conversion to PtrStepSz for passing to kernel functions. */
-            template <class U> operator PtrStepSz<U>() const;
+            template <class U> operator cv::cuda::PtrStepSz<U>() const;
 
             /** \brief Returns true if unallocated otherwise false. */
             bool empty() const;
@@ -220,9 +216,9 @@ namespace kf
 template<class T> inline       T* kf::cuda::Memory::ptr()       { return (      T*)data_; }
 template<class T> inline const T* kf::cuda::Memory::ptr() const { return (const T*)data_; }
 
-template <class U> inline kf::cuda::Memory::operator kf::cuda::PtrSz<U>() const
+template <class U> inline kf::cuda::Memory::operator cv::cuda::PtrSz<U>() const
 {
-    PtrSz<U> result;
+    cv::cuda::PtrSz<U> result;
     result.data = (U*)ptr<U>();
     result.size = sizeBytes_/sizeof(U);
     return result;
@@ -233,17 +229,17 @@ template <class U> inline kf::cuda::Memory::operator kf::cuda::PtrSz<U>() const
 template<class T>        T* kf::cuda::Memory2D::ptr(int y_arg)       { return (      T*)((      char*)data_ + y_arg * step_); }
 template<class T>  const T* kf::cuda::Memory2D::ptr(int y_arg) const { return (const T*)((const char*)data_ + y_arg * step_); }
 
-template <class U> kf::cuda::Memory2D::operator kf::cuda::PtrStep<U>() const
+template <class U> kf::cuda::Memory2D::operator cv::cuda::PtrStep<U>() const
 {
-    PtrStep<U> result;
+    cv::cuda::PtrStep<U> result;
     result.data = (U*)ptr<U>();
     result.step = step_;
     return result;
 }
 
-template <class U> kf::cuda::Memory2D::operator kf::cuda::PtrStepSz<U>() const
+template <class U> kf::cuda::Memory2D::operator cv::cuda::PtrStepSz<U>() const
 {
-    PtrStepSz<U> result;
+    cv::cuda::PtrStepSz<U> result;
     result.data = (U*)ptr<U>();
     result.step = step_;
     result.cols = colsBytes_/sizeof(U);

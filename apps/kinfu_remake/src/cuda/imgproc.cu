@@ -3,11 +3,13 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Depth bilateral filter
 
+using cv::cuda::device::divUp;
+
 namespace kf
 {
     namespace impl
     {
-        __global__ void bilateral_kernel(const cuda::PtrStepSz<ushort> src, cuda::PtrStep<ushort> dst, const int ksz, const float sigma_spatial2_inv_half, const float sigma_depth2_inv_half)
+        __global__ void bilateral_kernel(const cv::cuda::PtrStepSz<ushort> src, cv::cuda::PtrStep<ushort> dst, const int ksz, const float sigma_spatial2_inv_half, const float sigma_depth2_inv_half)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -62,7 +64,7 @@ namespace kf
 {
     namespace impl
     {
-        __global__ void truncate_depth_kernel(cuda::PtrStepSz<ushort> depth, ushort max_dist /*mm*/)
+        __global__ void truncate_depth_kernel(cv::cuda::PtrStepSz<ushort> depth, ushort max_dist /*mm*/)
         {
             int x = blockIdx.x * blockDim.x + threadIdx.x;
             int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -90,7 +92,7 @@ namespace kf
 {
     namespace impl
     {
-        __global__ void pyramid_kernel(const cuda::PtrStepSz<ushort> src, cuda::PtrStepSz<ushort> dst, float sigma_depth_mult3)
+        __global__ void pyramid_kernel(const cv::cuda::PtrStepSz<ushort> src, cv::cuda::PtrStepSz<ushort> dst, float sigma_depth_mult3)
         {
             int x = blockIdx.x * blockDim.x + threadIdx.x;
             int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -141,7 +143,7 @@ namespace kf
 {
     namespace impl
     {
-        __global__ void compute_normals_kernel(const cuda::PtrStepSz<ushort> depth, const Reprojector reproj, cuda::PtrStep<Normal> normals)
+        __global__ void compute_normals_kernel(const cv::cuda::PtrStepSz<ushort> depth, const Reprojector reproj, cv::cuda::PtrStep<Normal> normals)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -173,7 +175,7 @@ namespace kf
             normals(y, x) = n_out;
         }
 
-        __global__ void mask_depth_kernel(const cuda::PtrStep<Normal> normals, cuda::PtrStepSz<ushort> depth)
+        __global__ void mask_depth_kernel(const cv::cuda::PtrStep<Normal> normals, cv::cuda::PtrStepSz<ushort> depth)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -206,7 +208,7 @@ namespace kf
 {
     namespace impl
     {
-        __global__ void points_normals_kernel(const Reprojector reproj, const cuda::PtrStepSz<ushort> depth, cuda::PtrStep<Point> points, cuda::PtrStep<Normal> normals)
+        __global__ void points_normals_kernel(const Reprojector reproj, const cv::cuda::PtrStepSz<ushort> depth, cv::cuda::PtrStep<Point> points, cv::cuda::PtrStep<Normal> normals)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -255,7 +257,7 @@ namespace kf
 {
     namespace impl
     {
-        __global__ void compute_dists_kernel(const cuda::PtrStepSz<ushort> depth, Dists dists, float2 finv, float2 c)
+        __global__ void compute_dists_kernel(const cv::cuda::PtrStepSz<ushort> depth, Dists dists, float2 finv, float2 c)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -285,7 +287,7 @@ namespace kf
 {
     namespace impl
     {
-        __global__ void resize_depth_normals_kernel(const cuda::PtrStep<ushort> dsrc, const cuda::PtrStep<float4> nsrc, cuda::PtrStepSz<ushort> ddst, cuda::PtrStep<float4> ndst)
+        __global__ void resize_depth_normals_kernel(const cv::cuda::PtrStep<ushort> dsrc, const cv::cuda::PtrStep<float4> nsrc, cv::cuda::PtrStepSz<ushort> ddst, cv::cuda::PtrStep<float4> ndst)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -344,7 +346,7 @@ namespace kf
 {
     namespace impl
     {
-        __global__ void resize_points_normals_kernel(const cuda::PtrStep<Point> vsrc, const cuda::PtrStep<Normal> nsrc, cuda::PtrStepSz<Point> vdst, cuda::PtrStep<Normal> ndst)
+        __global__ void resize_points_normals_kernel(const cv::cuda::PtrStep<Point> vsrc, const cv::cuda::PtrStep<Normal> nsrc, cv::cuda::PtrStepSz<Point> vdst, cv::cuda::PtrStep<Normal> ndst)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -396,8 +398,8 @@ namespace kf
 {
     namespace impl
     {
-        __global__ void render_image_kernel(const cuda::PtrStep<ushort> depth, const cuda::PtrStep<Normal> normals,
-                                            const Reprojector reproj, const float3 light_pose, cuda::PtrStepSz<uchar4> dst)
+        __global__ void render_image_kernel(const cv::cuda::PtrStep<ushort> depth, const cv::cuda::PtrStep<Normal> normals,
+                                            const Reprojector reproj, const float3 light_pose, cv::cuda::PtrStepSz<uchar4> dst)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -450,8 +452,8 @@ namespace kf
             dst(y, x) = out;
         }
 
-        __global__ void render_image_kernel(const cuda::PtrStep<Point> points, const cuda::PtrStep<Normal> normals,
-                                            const Reprojector reproj, const float3 light_pose, cuda::PtrStepSz<uchar4> dst)
+        __global__ void render_image_kernel(const cv::cuda::PtrStep<Point> points, const cv::cuda::PtrStep<Normal> normals,
+                                            const Reprojector reproj, const float3 light_pose, cv::cuda::PtrStepSz<uchar4> dst)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -511,7 +513,7 @@ void kf::impl::renderImage(const Depth& depth, const Normals& normals, const Rep
     dim3 block (32, 8);
     dim3 grid (divUp (depth.cols(), block.x), divUp (depth.rows(), block.y));
 
-    render_image_kernel<<<grid, block>>>((cuda::PtrStep<ushort>)depth, normals, reproj, light_pose, image);
+    render_image_kernel<<<grid, block>>>((cv::cuda::PtrStep<ushort>)depth, normals, reproj, light_pose, image);
     cudaSafeCall ( cudaGetLastError () );
 }
 
@@ -520,7 +522,7 @@ void kf::impl::renderImage(const Points& points, const Normals& normals, const R
     dim3 block (32, 8);
     dim3 grid (divUp (points.cols(), block.x), divUp (points.rows(), block.y));
 
-    render_image_kernel<<<grid, block>>>((cuda::PtrStep<Point>)points, normals, reproj, light_pose, image);
+    render_image_kernel << <grid, block >> >((cv::cuda::PtrStep<Point>)points, normals, reproj, light_pose, image);
     cudaSafeCall ( cudaGetLastError () );
 }
 
@@ -528,7 +530,7 @@ namespace kf
 {
     namespace impl
     {
-        __global__ void tangent_colors_kernel(cuda::PtrStepSz<Normal> normals, cuda::PtrStep<uchar4> colors)
+        __global__ void tangent_colors_kernel(cv::cuda::PtrStepSz<Normal> normals, cv::cuda::PtrStep<uchar4> colors)
         {
             int x = threadIdx.x + blockIdx.x * blockDim.x;
             int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -566,7 +568,7 @@ namespace kf
 {
     namespace impl
     {
-        __global__ void mergePointNormalKernel (const Point* cloud, const float8* normals, cuda::PtrSz<float12> output)
+        __global__ void mergePointNormalKernel (const Point* cloud, const float8* normals, cv::cuda::PtrSz<float12> output)
         {
             int idx = threadIdx.x + blockIdx.x * blockDim.x;
 

@@ -133,7 +133,7 @@ void kf::KinFu::reset()
     volume_->clear();
 }
 
-cv::Affine3f kf::KinFu::getCameraPose (int time) const
+const cv::Affine3f& kf::KinFu::getCameraPose (int time) const
 {
     if (time > (int)poses_.size () || time < 0)
         time = (int)poses_.size () - 1;

@@ -1,6 +1,7 @@
 #include "device.hpp"
 #include "texture_binder.hpp"
 
+using cv::cuda::device::divUp;
 
 namespace kf
 {
@@ -109,7 +110,7 @@ namespace kf
 #endif
 
         __kf_device__
-        void ComputeIcpHelper::partial_reduce(const float row[7], cuda::PtrStep<float>& partial_buf) const
+        void ComputeIcpHelper::partial_reduce(const float row[7], cv::cuda::PtrStep<float>& partial_buf) const
         {
             volatile __shared__ float smem[Policy::CTA_SIZE];
             int tid = Block::flattenedThreadId ();
@@ -347,7 +348,7 @@ namespace kf
          STOR
         }
 
-        __global__ void icp_helper_kernel(const ComputeIcpHelper helper, cuda::PtrStep<float> partial_buf)
+        __global__ void icp_helper_kernel(const ComputeIcpHelper helper, cv::cuda::PtrStep<float> partial_buf)
         {
             int x = threadIdx.x + blockIdx.x * ComputeIcpHelper::Policy::CTA_SIZE_X;
             int y = threadIdx.y + blockIdx.y * ComputeIcpHelper::Policy::CTA_SIZE_Y;
@@ -370,7 +371,7 @@ namespace kf
             helper.partial_reduce(row, partial_buf);
         }
 
-        __global__ void icp_final_reduce_kernel(const cuda::PtrStep<float> partial_buf, const int length, float* final_buf)
+        __global__ void icp_final_reduce_kernel(const cv::cuda::PtrStep<float> partial_buf, const int length, float* final_buf)
         {
             const float *beg = partial_buf.ptr(blockIdx.x);
             const float *end = beg + length;

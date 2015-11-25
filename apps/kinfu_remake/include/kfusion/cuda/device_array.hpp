@@ -1,6 +1,5 @@
 #pragma once
 
-#include <kfusion/exports.hpp>
 #include <kfusion/cuda/device_memory.hpp>
 
 #include <vector>
@@ -17,7 +16,7 @@ namespace kf
           * \author Anatoly Baksheev
           */
         template<class T>
-        class KF_EXPORTS Array : public Memory
+        class Array : public Memory
         {
         public:
             /** \brief Element type. */
@@ -114,7 +113,7 @@ namespace kf
           * \author Anatoly Baksheev
           */
         template<class T>
-        class KF_EXPORTS Array2D : public Memory2D
+        class Array2D : public Memory2D
         {
         public:
             /** \brief Element type. */

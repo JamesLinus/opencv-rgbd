@@ -1,13 +1,19 @@
 #pragma once
 
-#include "cuda.h"
-#include <kfusion/cuda/kernel_containers.hpp>
+#include <cuda.h>
+#include <opencv2/core/cuda/common.hpp>
+
+#ifdef __CUDACC__
+#define __kf_device__ __device__ __forceinline__
+#else
+#define __kf_device__
+#endif
 
 namespace kf
 {
     namespace impl
     {
-        template <class T> __kf_hdevice__ void swap(T& a, T& b) { T c(a); a=b; b=c; }
+        template <class T> __CV_CUDA_HOST_DEVICE__ void swap(T& a, T& b) { T c(a); a=b; b=c; }
 
         template<typename T> struct numeric_limits;
 
@@ -49,7 +55,7 @@ namespace kf
             return make_float3(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z);
         }
 
-        __kf_hdevice__ float3 operator*(const float3& v1, const int3& v2)
+        __CV_CUDA_HOST_DEVICE__ float3 operator*(const float3& v1, const int3& v2)
         {
             return make_float3(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z);
         }
@@ -59,7 +65,7 @@ namespace kf
             return make_float3(v1.x / v2.x, v1.y / v2.y, v1.z / v2.z);
         }
 
-        __kf_hdevice__ float3 operator/(const float& v, const float3& vec)
+        __CV_CUDA_HOST_DEVICE__ float3 operator/(const float& v, const float3& vec)
         {
             return make_float3(v / vec.x, v / vec.y, v / vec.z);
         }
@@ -74,12 +80,12 @@ namespace kf
             return make_float3(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
         }
 
-        __kf_hdevice__ float3 operator*(const float3& v1, const float& v)
+        __CV_CUDA_HOST_DEVICE__ float3 operator*(const float3& v1, const float& v)
         {
             return make_float3(v1.x * v, v1.y * v, v1.z * v);
         }
 
-        __kf_hdevice__ float3 operator*(const float& v, const float3& v1)
+        __CV_CUDA_HOST_DEVICE__ float3 operator*(const float& v, const float3& v1)
         {
             return make_float3(v1.x * v, v1.y * v, v1.z * v);
         }
@@ -99,7 +105,7 @@ namespace kf
             return v * rsqrt(dot(v, v));
         }
 
-        __kf_hdevice__ float3 cross(const float3& v1, const float3& v2)
+        __CV_CUDA_HOST_DEVICE__ float3 cross(const float3& v1, const float3& v2)
         {
             return make_float3(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x);
         }
@@ -171,8 +177,8 @@ namespace kf
             template<int Rows> struct MiniMat
             {
                 float3 data[Rows];
-                __kf_hdevice__ float3& operator[](int i) { return data[i]; }
-                __kf_hdevice__ const float3& operator[](int i) const { return data[i]; }
+                __CV_CUDA_HOST_DEVICE__ float3& operator[](int i) { return data[i]; }
+                __CV_CUDA_HOST_DEVICE__ const float3& operator[](int i) const { return data[i]; }
             };
             typedef MiniMat<3> Mat33;
             typedef MiniMat<4> Mat43;

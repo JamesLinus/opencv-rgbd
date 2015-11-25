@@ -10,15 +10,15 @@ namespace kf
 {
     namespace cuda
     {
-        KF_EXPORTS int getCudaEnabledDeviceCount();
-        KF_EXPORTS void setDevice(int device);
-        KF_EXPORTS std::string getDeviceName(int device);
-        KF_EXPORTS bool checkIfPreFermiGPU(int device);
-        KF_EXPORTS void printCudaDeviceInfo(int device);
-        KF_EXPORTS void printShortCudaDeviceInfo(int device);
+        int getCudaEnabledDeviceCount();
+        void setDevice(int device);
+        std::string getDeviceName(int device);
+        bool checkIfPreFermiGPU(int device);
+        void printCudaDeviceInfo(int device);
+        void printShortCudaDeviceInfo(int device);
     }
 
-    struct KF_EXPORTS KinFuParams
+    struct KinFuParams
     {
         static KinFuParams default_params();
 
@@ -51,7 +51,7 @@ namespace kf
 
     };
 
-    class KF_EXPORTS KinFu
+    class KinFu
     {
     public:        
         typedef cv::Ptr<KinFu> Ptr;
@@ -74,7 +74,7 @@ namespace kf
         void renderImage(cuda::Image& image, int flags = 0);
         void renderImage(cuda::Image& image, const cv::Affine3f& pose, int flags = 0);
 
-        cv::Affine3f getCameraPose (int time = -1) const;
+        const cv::Affine3f& getCameraPose (int time = -1) const;
     private:
         void allocate_buffers();
 

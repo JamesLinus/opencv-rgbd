@@ -1,7 +1,6 @@
 #pragma once
 
 #include "kfusion/cuda/device_array.hpp"
-#include "../safe_call.hpp"
 
 namespace kf
 {
@@ -25,7 +24,7 @@ namespace kf
             }
 
             template<class T, enum cudaTextureReadMode readMode>
-            TextureBinder(const PtrStepSz<T>& arr, const struct texture<T, 2, readMode>& tex) : texref(&tex)
+            TextureBinder(const cv::cuda::PtrStepSz<T>& arr, const struct texture<T, 2, readMode>& tex) : texref(&tex)
             {
                 cudaChannelFormatDesc desc = cudaCreateChannelDesc<T>();
                 cudaSafeCall( cudaBindTexture2D(0, tex, arr.data, desc, arr.cols, arr.rows, arr.step) );
@@ -38,7 +37,7 @@ namespace kf
             }
 
             template<class T, enum cudaTextureReadMode readMode>
-            TextureBinder(const PtrSz<T>& arr, const struct texture<T, 1, readMode> &tex) : texref(&tex)
+            TextureBinder(const cv::cuda::PtrSz<T>& arr, const struct texture<T, 1, readMode> &tex) : texref(&tex)
             {
                 cudaChannelFormatDesc desc = cudaCreateChannelDesc<T>();
                 cudaSafeCall( cudaBindTexture(0, tex, arr.data, desc, arr.size * arr.elemSize()) );

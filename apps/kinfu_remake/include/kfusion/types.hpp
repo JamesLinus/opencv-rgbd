@@ -10,7 +10,7 @@ struct CUevent_st;
 
 namespace kf
 {
-    struct KF_EXPORTS Intr
+    struct Intr
     {
         float fx, fy, cx, cy;
 
@@ -19,7 +19,7 @@ namespace kf
         Intr operator()(int level_index) const;
     };
 
-    KF_EXPORTS std::ostream& operator << (std::ostream& os, const Intr& intr);
+    std::ostream& operator << (std::ostream& os, const Intr& intr);
 
     struct Point
     {
@@ -73,7 +73,7 @@ namespace kf
 
     inline float deg2rad (float alpha) { return alpha * 0.017453293f; }
 
-    struct KF_EXPORTS ScopeTime
+    struct ScopeTime
     {
         const char* name;
         double start;
@@ -81,7 +81,7 @@ namespace kf
         ~ScopeTime();
     };
 
-    struct KF_EXPORTS SampledScopeTime
+    struct SampledScopeTime
     {
     public:
         enum { EACH = 33 };

@@ -1,7 +1,12 @@
 #pragma once
 
 #include <kfusion/cuda/device_array.hpp>
-#include "safe_call.hpp"
+
+#ifdef __CUDACC__
+#define __kf_device__ __device__ __forceinline__
+#else
+#define __kf_device__
+#endif
 
 //#define USE_DEPTH
 
@@ -12,10 +17,7 @@ namespace kf
         typedef float4 Normal;
         typedef float4 Point;
 
-        typedef unsigned short ushort;
-        typedef unsigned char uchar;
-
-        typedef cuda::PtrStepSz<ushort> Dists;
+        typedef cv::cuda::PtrStepSz<ushort> Dists;
         typedef cuda::Array2D<ushort> Depth;
         typedef cuda::Array2D<Normal> Normals;
         typedef cuda::Array2D<Point> Points;
@@ -82,9 +84,9 @@ namespace kf
             float rows, cols;
             float2 f, c, finv;
 
-            cuda::PtrStep<ushort> dcurr;
-            cuda::PtrStep<Normal> ncurr;
-            cuda::PtrStep<Point> vcurr;
+            cv::cuda::PtrStep<ushort> dcurr;
+            cv::cuda::PtrStep<Normal> ncurr;
+            cv::cuda::PtrStep<Point> vcurr;
 
             ComputeIcpHelper(float dist_thres, float angle_thres);
             void setLevelIntr(int level_index, float fx, float fy, float cx, float cy);
@@ -96,7 +98,7 @@ namespace kf
 
             //private:
             __kf_device__ int find_coresp(int x, int y, float3& n, float3& d, float3& s) const;
-            __kf_device__ void partial_reduce(const float row[7], cuda::PtrStep<float>& partial_buffer) const;
+            __kf_device__ void partial_reduce(const float row[7], cv::cuda::PtrStep<float>& partial_buffer) const;
             __kf_device__ float2 proj(const float3& p) const;
             __kf_device__ float3 reproj(float x, float y, float z)  const;
         };
@@ -135,8 +137,8 @@ namespace kf
 
 
         //exctraction functionality
-        size_t extractPoints(const TsdfVolume& volume, const Aff3f& aff, cuda::PtrSz<Point> output);
-        void extractNormals(const TsdfVolume& volume, const cuda::PtrSz<Point>& points, const Aff3f& aff, const Mat3f& Rinv, float gradient_delta_factor, float4* output);
+        size_t extractPoints(const TsdfVolume& volume, const Aff3f& aff, cv::cuda::PtrSz<Point> output);
+        void extractNormals(const TsdfVolume& volume, const cv::cuda::PtrSz<Point>& points, const Aff3f& aff, const Mat3f& Rinv, float gradient_delta_factor, float4* output);
 
         struct float8  { float x, y, z, w, c1, c2, c3, c4; };
         struct float12 { float x, y, z, w, normal_x, normal_y, normal_z, n4, c1, c2, c3, c4; };

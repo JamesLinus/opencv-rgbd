@@ -1,6 +1,7 @@
 #include <iostream>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/core/cuda.hpp>
 //#include <opencv2/viz/vizcore.hpp>
 #include <kfusion/kinfu.hpp>
 #include <time.h>
@@ -151,6 +152,8 @@ int main (int argc, char* argv[])
     int device = 0;
     cuda::setDevice (device);
     cuda::printShortCudaDeviceInfo (device);
+
+    //cv::cuda::GpuMat mat(10, 10, CV_8UC3);
 
     if(cuda::checkIfPreFermiGPU(device))
         return std::cout << std::endl << "Kinfu is not supported for pre-Fermi GPU architectures, and not built for them by default. Exiting..." << std::endl, 1;

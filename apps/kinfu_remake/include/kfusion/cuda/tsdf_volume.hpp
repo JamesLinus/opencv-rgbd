@@ -6,7 +6,7 @@ namespace kf
 {
     namespace cuda
     {
-        class KF_EXPORTS TsdfVolume
+        class TsdfVolume
         {
         public:
             TsdfVolume(const cv::Vec3i& dims);

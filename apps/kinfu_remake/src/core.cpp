@@ -1,5 +1,4 @@
 #include <kfusion/kinfu.hpp>
-#include "safe_call.hpp"
 
 #include <cuda.h>
 #include <cstdio>
@@ -53,7 +52,7 @@ namespace
             return;        
 
         printf("Driver API error = %04d\n", error);
-        kf::cuda::error("driver API error", __FILE__, __LINE__);
+        CV_Error(cv::Error::GpuApiCallError, "driver API error");
     }
 
     inline int convertSMVer2Cores(int major, int minor)
