@@ -8,16 +8,6 @@
 
 namespace kf
 {
-    namespace cuda
-    {
-        int getCudaEnabledDeviceCount();
-        void setDevice(int device);
-        std::string getDeviceName(int device);
-        bool checkIfPreFermiGPU(int device);
-        void printCudaDeviceInfo(int device);
-        void printShortCudaDeviceInfo(int device);
-    }
-
     struct KinFuParams
     {
         static KinFuParams default_params();

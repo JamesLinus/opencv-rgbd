@@ -147,15 +147,25 @@ struct KinFuApp
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+static bool checkIfPreFermiGPU(int device)
+{
+    if (device < 0)
+        cudaSafeCall(cudaGetDevice(&device));
+
+    cudaDeviceProp prop;
+    cudaSafeCall(cudaGetDeviceProperties(&prop, device));
+    return prop.major < 2; // CC == 1.x
+}
+
 int main (int argc, char* argv[])
 {
     int device = 0;
-    cuda::setDevice (device);
-    cuda::printShortCudaDeviceInfo (device);
+    cv::cuda::setDevice (device);
+    cv::cuda::printShortCudaDeviceInfo(device);
 
     //cv::cuda::GpuMat mat(10, 10, CV_8UC3);
 
-    if(cuda::checkIfPreFermiGPU(device))
+    if (checkIfPreFermiGPU(device))
         return std::cout << std::endl << "Kinfu is not supported for pre-Fermi GPU architectures, and not built for them by default. Exiting..." << std::endl, 1;
 
     cv::VideoCapture capture(cv::CAP_OPENNI2);
