@@ -53,11 +53,11 @@ namespace rgbd
 class PlaneBase
 {
 public:
-  PlaneBase(const cv::Vec3f & m, const cv::Vec3f &n_in, int index)
+  PlaneBase(const Vec3f & m, const Vec3f &n_in, int index)
       :
         index_(index),
         n_(n_in),
-        m_sum_(cv::Vec3f(0, 0, 0)),
+        m_sum_(Vec3f(0, 0, 0)),
         m_(m),
         Q_(Matx33f::zeros()),
         mse_(0),
@@ -78,7 +78,7 @@ public:
    */
   virtual
   float
-  distance(const cv::Vec3f& p_j) const = 0;
+  distance(const Vec3f& p_j) const = 0;
 
   /** The d coefficient in the plane equation ax+by+cz+d = 0
    * @return
@@ -92,7 +92,7 @@ public:
   /** The normal to the plane
    * @return the normal to the plane
    */
-  const cv::Vec3f &
+  const Vec3f &
   n() const
   {
     return n_;
@@ -111,7 +111,7 @@ public:
 
     // Compute n
     SVD svd(C);
-    n_ = cv::Vec3f(svd.vt.at<float>(2, 0), svd.vt.at<float>(2, 1), svd.vt.at<float>(2, 2));
+    n_ = Vec3f(svd.vt.at<float>(2, 0), svd.vt.at<float>(2, 1), svd.vt.at<float>(2, 2));
     mse_ = svd.w.at<float>(2) / K_;
 
     UpdateD();
@@ -120,7 +120,7 @@ public:
   /** Update the different sum of point and sum of point*point.t()
    */
   void
-  UpdateStatistics(const cv::Vec3f & point, const Matx33f & Q_local)
+  UpdateStatistics(const Vec3f & point, const Matx33f & Q_local)
   {
     m_sum_ += point;
     Q_ += Q_local;
@@ -144,7 +144,7 @@ protected:
   /** The 4th coefficient in the plane equation ax+by+cz+d = 0 */
   float d_;
   /** Normal of the plane */
-  cv::Vec3f n_;
+  Vec3f n_;
 private:
   inline void
   UpdateD()
@@ -152,9 +152,9 @@ private:
     d_ = -m_.dot(n_);
   }
   /** The sum of the points */
-  cv::Vec3f m_sum_;
+  Vec3f m_sum_;
   /** The mean of the points */
-  cv::Vec3f m_;
+  Vec3f m_;
   /** The sum of pi * pi^\top */
   Matx33f Q_;
   /** The different matrices we need to update */
@@ -171,7 +171,7 @@ private:
 class Plane: public PlaneBase
 {
 public:
-  Plane(const cv::Vec3f & m, const cv::Vec3f &n_in, int index)
+  Plane(const Vec3f & m, const Vec3f &n_in, int index)
       :
         PlaneBase(m, n_in, index)
   {
@@ -182,7 +182,7 @@ public:
    * @return
    */
   float
-  distance(const cv::Vec3f& p_j) const
+  distance(const Vec3f& p_j) const
   {
     return std::abs(float(p_j.dot(n_) + d_));
   }
@@ -193,7 +193,7 @@ public:
 class PlaneABC: public PlaneBase
 {
 public:
-  PlaneABC(const cv::Vec3f & m, const cv::Vec3f &n_in, int index, float sensor_error_a, float sensor_error_b,
+  PlaneABC(const Vec3f & m, const Vec3f &n_in, int index, float sensor_error_a, float sensor_error_b,
            float sensor_error_c)
       :
         PlaneBase(m, n_in, index),
@@ -206,7 +206,7 @@ public:
   /** The distance is now computed by taking the sensor error into account */
   inline
   float
-  distance(const cv::Vec3f& p_j) const
+  distance(const Vec3f& p_j) const
   {
     float cst = p_j.dot(n_) + d_;
     float err = sensor_error_a_ * p_j[2] * p_j[2] + sensor_error_b_ * p_j[2] + sensor_error_c_;
@@ -227,7 +227,7 @@ private:
 class PlaneGrid
 {
 public:
-  PlaneGrid(const Mat_<cv::Vec3f> & points3d, int block_size)
+  PlaneGrid(const Mat_<Vec3f> & points3d, int block_size)
       :
         block_size_(block_size)
   {
@@ -250,14 +250,14 @@ public:
       {
         // Update the tiles
         Matx33f Q = Matx33f::zeros();
-        cv::Vec3f m = cv::Vec3f(0, 0, 0);
+        Vec3f m = Vec3f(0, 0, 0);
         int K = 0;
         for (int j = y * block_size; j < std::min((y + 1) * block_size, points3d.rows); ++j)
         {
-          const cv::Vec3f * vec = points3d.ptr < cv::Vec3f > (j, x * block_size), *vec_end;
+          const Vec3f * vec = points3d.ptr < Vec3f > (j, x * block_size), *vec_end;
           float * pointpointt = reinterpret_cast<float*>(Q_.ptr < Vec<float, 9> > (j, x * block_size));
           if (x == mini_cols - 1)
-            vec_end = points3d.ptr < cv::Vec3f > (j, points3d.cols - 1) + 1;
+            vec_end = points3d.ptr < Vec3f > (j, points3d.cols - 1) + 1;
           else
             vec_end = vec + block_size;
           for (; vec != vec_end; ++vec, pointpointt += 9)
@@ -294,15 +294,15 @@ public:
 
         // Compute n
         SVD svd(C);
-        n_(y, x) = cv::Vec3f(svd.vt.at<float>(2, 0), svd.vt.at<float>(2, 1), svd.vt.at<float>(2, 2));
+        n_(y, x) = Vec3f(svd.vt.at<float>(2, 0), svd.vt.at<float>(2, 1), svd.vt.at<float>(2, 2));
         mse_(y, x) = svd.w.at<float>(2) / K;
       }
   }
 
   /** The size of the block */
   int block_size_;
-  Mat_<cv::Vec3f> m_;
-  Mat_<cv::Vec3f> n_;
+  Mat_<Vec3f> m_;
+  Mat_<Vec3f> n_;
   Mat_<Vec<float, 9> > Q_;
   Mat_<float> mse_;
 };
@@ -383,7 +383,7 @@ private:
 class InlierFinder
 {
 public:
-  InlierFinder(float err, const Mat_<cv::Vec3f> & points3d, const Mat_<cv::Vec3f> & normals,
+  InlierFinder(float err, const Mat_<Vec3f> & points3d, const Mat_<Vec3f> & normals,
                unsigned char plane_index, int block_size)
       :
         err_(err),
@@ -420,14 +420,14 @@ public:
     for (int yy = range_y.start; yy != range_y.end; ++yy)
     {
       uchar* data = overall_mask.ptr(yy, range_x.start), *data_end = data + range_x.size();
-      const cv::Vec3f* point = points3d_.ptr < cv::Vec3f > (yy, range_x.start);
+      const Vec3f* point = points3d_.ptr < Vec3f > (yy, range_x.start);
       const Matx33f* Q_local = reinterpret_cast<const Matx33f *>(plane_grid.Q_.ptr < Vec<float, 9>
           > (yy, range_x.start));
 
       // Depending on whether you have a normal, check it
       if (!normals_.empty())
       {
-        const cv::Vec3f* normal = normals_.ptr < cv::Vec3f > (yy, range_x.start);
+        const Vec3f* normal = normals_.ptr < Vec3f > (yy, range_x.start);
         for (; data != data_end; ++data, ++point, ++normal, ++Q_local)
         {
           // Don't do anything if the point already belongs to another plane
@@ -519,8 +519,8 @@ public:
 
 private:
   float err_;
-  const Mat_<cv::Vec3f> & points3d_;
-  const Mat_<cv::Vec3f> & normals_;
+  const Mat_<Vec3f> & points3d_;
+  const Mat_<Vec3f> & normals_;
   unsigned char plane_index_;
   /** THe block size as defined in the main algorithm */
   int block_size_;
@@ -540,7 +540,7 @@ private:
   RgbdPlane::operator()(InputArray points3d_in, InputArray normals_in, OutputArray mask_out,
                         OutputArray plane_coefficients_out)
   {
-    Mat_<cv::Vec3f> points3d, normals;
+    Mat_<Vec3f> points3d, normals;
     if (points3d_in.depth() == CV_32F)
       points3d = points3d_in.getMat();
     else
@@ -576,7 +576,7 @@ private:
 
       // Construct the plane for the first tile
       int x = front_tile.x_, y = front_tile.y_;
-      const cv::Vec3f & n = plane_grid.n_(y, x);
+      const Vec3f & n = plane_grid.n_(y, x);
       Ptr<PlaneBase> plane;
       if ((sensor_error_a_ == 0) && (sensor_error_b_ == 0) && (sensor_error_c_ == 0))
         plane = Ptr<PlaneBase>(new Plane(plane_grid.m_(y, x), n, (int)index_plane));
